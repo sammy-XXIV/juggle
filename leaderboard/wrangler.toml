@@ -1,0 +1,14 @@
+name = "juggle-leaderboard"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+[vars]
+PACIFICA_API_URL = "https://test-api.pacifica.fi/api/v1"
+MARKET = "SOL"
+MAX_LEVERAGE = "5"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "juggle-leaderboard"
+# Filled in by `wrangler d1 create juggle-leaderboard` before the first deploy.
+database_id = "589aaf8c-c1a6-44a9-abd9-af0b367f9a2b"

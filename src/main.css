@@ -1,0 +1,801 @@
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("/fonts/BebasNeue.woff2") format("woff2");
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/SpaceGrotesk-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: block;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/SpaceGrotesk-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: block;
+}
+
+:root {
+  --sol-purple: #9945ff;
+  --sol-green: #14f195;
+  --ink: #0a0a0a;
+  --paper: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+#game-canvas {
+  display: block;
+  touch-action: none;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 16px);
+  color: #39ff88;
+  font-family: "Space Grotesk", sans-serif;
+  pointer-events: none;
+}
+
+#hud[hidden],
+#landing[hidden],
+[hidden] {
+  display: none !important;
+}
+
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.hud-skr-right {
+  flex: 1;
+  text-align: right;
+}
+
+.hud-timer-wrap {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.hud-timer-svg {
+  transform: rotate(-90deg);
+}
+
+.hud-timer-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.15);
+  stroke-width: 4;
+}
+
+.hud-timer-ring {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 150.8;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.25s linear, stroke 0.25s;
+}
+
+.hud-timer-secs {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.hud-big[data-tone="up"] {
+  color: var(--sol-green);
+}
+
+.hud-big[data-tone="down"] {
+  color: #ff5a5a;
+}
+
+.hud-big[data-tone="flat"] {
+  color: var(--paper);
+}
+
+.hud-small {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--paper);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.hud-error {
+  align-self: center;
+  max-width: 90%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(10, 10, 10, 0.75);
+  color: #ff8a8a;
+  font-size: 14px;
+  text-align: center;
+}
+
+.hud-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.hud-btn {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 20px;
+  min-width: 58px;
+  padding: 6px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 4px 0 var(--ink);
+}
+
+.hud-btn-exit {
+  background: #ffd23f;
+}
+
+.hud-position {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 22px;
+  color: var(--paper);
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+}
+
+.hud-big,
+#hud-skr {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 26px;
+  letter-spacing: 1px;
+  -webkit-text-stroke: 2px #0a0a0a;
+  paint-order: stroke fill;
+  text-shadow:
+    2px 2px 0 #0a0a0a,
+    -2px -2px 0 #0a0a0a,
+    -2px 2px 0 #0a0a0a,
+    2px -2px 0 #0a0a0a;
+}
+
+#landing {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(env(safe-area-inset-top) + 56px) 24px calc(env(safe-area-inset-bottom) + 24px);
+  background: linear-gradient(to bottom, rgba(10, 10, 10, 0) 45%, rgba(10, 10, 10, 0.75) 100%);
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--paper);
+  text-align: center;
+}
+
+.logo {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(52px, 16vw, 100px);
+  line-height: 0.9;
+  letter-spacing: 3px;
+  color: var(--paper);
+  -webkit-text-stroke: 4px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 6px 0 var(--ink);
+}
+
+.tagline {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.landing-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.btn {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 22px;
+  letter-spacing: 1.5px;
+  padding: 10px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 4px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 80ms, box-shadow 80ms;
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--sol-purple), var(--sol-green));
+  color: var(--paper);
+  font-size: 26px;
+  -webkit-text-stroke: 1.5px var(--ink);
+  paint-order: stroke fill;
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--paper);
+  border-color: var(--paper);
+  box-shadow: none;
+}
+
+.footnote {
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px);
+  background: rgba(10, 10, 10, 0.7);
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--paper);
+  text-align: center;
+}
+
+.screen[hidden] {
+  display: none;
+}
+
+.screen-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 40px;
+  letter-spacing: 2px;
+  -webkit-text-stroke: 3px var(--ink);
+  paint-order: stroke fill;
+}
+
+.stake-amount {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 64px;
+  line-height: 1;
+  color: var(--sol-green);
+  -webkit-text-stroke: 3px var(--ink);
+  paint-order: stroke fill;
+}
+
+.chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chip {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 20px;
+  min-width: 52px;
+  padding: 6px 10px;
+  border: 2px solid var(--paper);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.chip.is-active {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.stake-input {
+  width: 100%;
+  max-width: 360px;
+  padding: 10px 14px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 16px;
+  border: 2px solid var(--paper);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--paper);
+  text-align: center;
+}
+
+.stake-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stake-note {
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.stake-error {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ff6b6b;
+}
+
+.skr-shield-section {
+  width: 100%;
+  max-width: 360px;
+  border: 2px solid rgba(20,184,116,0.3);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(20,184,116,0.06);
+}
+
+.skr-shield-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.skr-shield-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  color: var(--green);
+}
+
+.skr-shield-coverage {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  opacity: 0.8;
+}
+
+.result-shield {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--green);
+  margin: 0;
+}
+
+.wallet-chip {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 12px);
+  right: 16px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+.btn-row {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-row .btn {
+  flex: 1;
+  font-size: 22px;
+}
+
+.btn-small {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 17px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  box-shadow: 0 3px 0 var(--ink);
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+}
+
+.screen-copy {
+  font-size: 16px;
+  max-width: 360px;
+}
+
+.mono {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  word-break: break-all;
+  opacity: 0.8;
+}
+
+.fund-address-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  padding: 4px 6px;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn-icon:hover {
+  color: var(--green);
+  border-color: var(--green);
+}
+.btn-icon.copied {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.steps {
+  list-style: none;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.steps li.is-done {
+  border-color: var(--sol-green);
+}
+
+.step-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.step-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sol-green);
+}
+
+.screen-scroll {
+  justify-content: flex-start;
+  overflow-y: auto;
+}
+
+.howto-lanes {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 20px;
+}
+.howto-lane {
+  flex: 1;
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+  border: 2px solid transparent;
+}
+.howto-lane--short { background: rgba(114,9,183,0.25); border-color: #7209b7; }
+.howto-lane--flat  { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+.howto-lane--long  { background: rgba(20,184,116,0.2); border-color: var(--green); }
+.howto-lane-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+}
+.howto-lane-desc {
+  font-size: 11px;
+  opacity: 0.75;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+
+.howto-section {
+  width: 100%;
+  max-width: 420px;
+  text-align: left;
+  margin-bottom: 16px;
+}
+.howto-heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+  margin: 0 0 8px;
+}
+.howto-p {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+.howto-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.howto-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+}
+.howto-key {
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  min-width: 90px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.howto-list {
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 18px;
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.board-list {
+  width: 100%;
+  max-width: 400px;
+  max-height: 45vh;
+  overflow-y: auto;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.board-list li {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.board-list .rank {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 22px;
+}
+
+.board-list .ret-up {
+  color: var(--sol-green);
+}
+
+.board-list .ret-down {
+  color: #ff6b6b;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  transform: translateX(-50%);
+  max-width: 90vw;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(10, 10, 10, 0.9);
+  color: var(--paper);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 15px;
+  text-align: center;
+  z-index: 10;
+}
+
+/* ── Chat AI ── */
+.chat-bubble {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 140px);
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--purple);
+  border: 2px solid rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  z-index: 15;
+  box-shadow: 0 4px 20px rgba(114,9,183,0.5);
+  animation: bubble-float 3s ease-in-out infinite;
+}
+.chat-bubble:hover {
+  box-shadow: 0 6px 28px rgba(114,9,183,0.75);
+}
+
+@keyframes bubble-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+.chat-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: rgba(8,8,12,0.97);
+  border-top: 2px solid rgba(255,255,255,0.1);
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.chat-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  color: var(--green);
+}
+
+.chat-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+.chat-close:hover { color: var(--paper); }
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-msg {
+  display: flex;
+  max-width: 85%;
+}
+
+.chat-msg--ai {
+  align-self: flex-start;
+}
+.chat-msg--ai span {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px 16px 16px 16px;
+  padding: 10px 14px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--paper);
+}
+
+.chat-msg--user {
+  align-self: flex-end;
+}
+.chat-msg--user span {
+  background: var(--purple);
+  border-radius: 16px 4px 16px 16px;
+  padding: 10px 14px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #fff;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px calc(env(safe-area-inset-bottom) + 14px);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.chat-input {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: var(--paper);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  outline: none;
+}
+.chat-input:focus { border-color: var(--green); }
+.chat-input::placeholder { opacity: 0.4; }
+
+.chat-send {
+  background: var(--green);
+  border: none;
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.chat-send:hover { opacity: 0.85; }
