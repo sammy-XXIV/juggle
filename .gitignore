@@ -34,3 +34,6 @@ dist-ssr
 android/keystore.properties
 android/app/*.keystore
 android/app/*.jks
+
+# SKR token setup keypairs — never commit
+scripts/.skr-keypairs.json

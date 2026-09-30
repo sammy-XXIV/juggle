@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Juggle — Pitch Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;700&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Space Grotesk',sans-serif}
+#deck{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{position:relative;width:1920px;height:1080px;transform-origin:top left;overflow:hidden}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .35s ease;display:flex;flex-direction:column;padding:96px 128px}
+.slide.active{opacity:1;pointer-events:auto}
+#nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:10}
+.dot{width:10px;height:10px;border-radius:50%;background:#3a3a5a;cursor:pointer;transition:background .2s}
+.dot.active{background:#9945ff}
+#arrows{position:fixed;bottom:20px;right:40px;display:flex;gap:12px;z-index:10}
+.arr{background:#1a1a2a;border:2px solid #3a3a5a;color:#8a8a9a;width:44px;height:44px;border-radius:8px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,color .2s}
+.arr:hover{border-color:#9945ff;color:#f0f0eb}
+#counter{position:fixed;bottom:28px;right:120px;font-size:14px;color:#4a4a6a;z-index:10;font-family:'Space Grotesk',sans-serif;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div id="deck"><div id="stage">
+
+<!-- 1. COVER -->
+<div class="slide active" style="background:#0a0a0a;color:#f0f0eb;justify-content:space-between;">
+  <div style="position:absolute;left:0;top:0;right:0;height:6px;background:linear-gradient(90deg,#9945ff,#14f195);"></div>
+  <div>
+    <p style="font-size:22px;font-weight:700;color:#9945ff;letter-spacing:4px;text-transform:uppercase;margin-bottom:28px;">Clock In Hackathon · Oct 2026</p>
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:160px;line-height:.88;letter-spacing:4px;color:#f0f0eb;">JUG<span style="color:#9945ff;">G</span>LE</h1>
+    <p style="font-size:30px;font-weight:700;color:#14f195;letter-spacing:1px;text-transform:uppercase;margin-top:24px;">Surf the market. Dodge the red.</p>
+    <p style="font-size:22px;color:#6a6a8a;margin-top:10px;">A 3D runner where every lane is a real Solana perpetuals position.</p>
+  </div>
+  <div style="display:flex;gap:20px;align-items:center;">
+    <div style="background:#1a0d2e;border:2px solid #9945ff;border-radius:40px;padding:10px 26px;font-size:20px;font-weight:700;color:#9945ff;">Pacifica Perps</div>
+    <div style="background:#0d1a10;border:2px solid #14f195;border-radius:40px;padding:10px 26px;font-size:20px;font-weight:700;color:#14f195;">SKR Integration</div>
+    <div style="background:#1a0d2e;border:2px solid #9945ff;border-radius:40px;padding:10px 26px;font-size:20px;font-weight:700;color:#9945ff;">AI Coach</div>
+    <div style="flex:1;"></div>
+    <div style="display:flex;gap:12px;">
+      <div style="background:rgba(20,241,149,.1);border:2px solid #14f195;border-radius:10px;padding:14px 28px;font-family:'Bebas Neue',sans-serif;font-size:28px;color:#14f195;letter-spacing:2px;">LONG</div>
+      <div style="background:rgba(255,255,255,.03);border:2px solid #3a3a5a;border-radius:10px;padding:14px 28px;font-family:'Bebas Neue',sans-serif;font-size:28px;color:#5a5a7a;letter-spacing:2px;">FLAT</div>
+      <div style="background:rgba(255,80,80,.1);border:2px solid #ff5050;border-radius:10px;padding:14px 28px;font-family:'Bebas Neue',sans-serif;font-size:28px;color:#ff5050;letter-spacing:2px;">SHORT</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. PROBLEM -->
+<div class="slide" style="background:#0a0a0a;color:#f0f0eb;">
+  <p style="font-size:20px;font-weight:700;color:#9945ff;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">The Problem</p>
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:96px;line-height:1;color:#f0f0eb;">Perp trading is <span style="color:#ff5050;">brutal</span></h2>
+  <div style="flex:1;display:flex;align-items:flex-end;">
+    <div style="display:flex;gap:24px;width:100%;">
+      <div style="flex:1;background:#13131f;border:2px solid #2a2a3e;border-radius:16px;padding:36px;display:flex;flex-direction:column;gap:14px;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#2a2a3e;line-height:1;">01</p>
+        <h3 style="font-size:26px;font-weight:700;color:#f0f0eb;">Brutal learning curve</h3>
+        <p style="font-size:22px;color:#8a8a9a;line-height:1.6;">Leverage, funding rates, liquidation — beginners blow accounts before understanding what happened.</p>
+      </div>
+      <div style="flex:1;background:#13131f;border:2px solid #2a2a3e;border-radius:16px;padding:36px;display:flex;flex-direction:column;gap:14px;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#2a2a3e;line-height:1;">02</p>
+        <h3 style="font-size:26px;font-weight:700;color:#f0f0eb;">Mobile apps are read-only</h3>
+        <p style="font-size:22px;color:#8a8a9a;line-height:1.6;">Existing perp platforms feel like desktop ports. Touch UX is an afterthought, not the product.</p>
+      </div>
+      <div style="flex:1;background:#13131f;border:2px solid #2a2a3e;border-radius:16px;padding:36px;display:flex;flex-direction:column;gap:14px;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#2a2a3e;line-height:1;">03</p>
+        <h3 style="font-size:26px;font-weight:700;color:#f0f0eb;">Feedback arrives too late</h3>
+        <p style="font-size:22px;color:#8a8a9a;line-height:1.6;">You learn you made the wrong call when the P&amp;L turns red. There is no teaching layer.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. SOLUTION -->
+<div class="slide" style="background:#0f0f1a;color:#f0f0eb;">
+  <p style="font-size:20px;font-weight:700;color:#14f195;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">The Solution</p>
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:96px;line-height:1;color:#f0f0eb;margin-bottom:36px;">What is Juggle?</h2>
+  <div style="display:flex;gap:60px;align-items:flex-start;flex:1;">
+    <div style="flex:1.3;display:flex;flex-direction:column;gap:22px;">
+      <p style="font-size:24px;color:#c8c8d8;line-height:1.7;">Juggle is a <b style="color:#f0f0eb;">3D infinite runner</b> built for Solana Mobile. Each lane the player surfs maps to a real perpetuals position on <b style="color:#f0f0eb;">Pacifica</b>.</p>
+      <p style="font-size:24px;color:#c8c8d8;line-height:1.7;">Dodge candles, stay in the green lane, cash out before the market turns — every reflex trained in the game is a real trading instinct.</p>
+      <p style="font-size:24px;color:#c8c8d8;line-height:1.7;">Not a simulation. Every run opens and closes a <b style="color:#f0f0eb;">real testnet order</b> on Pacifica's SOL-PERP market.</p>
+    </div>
+    <div style="flex:.9;display:flex;flex-direction:column;gap:14px;">
+      <div style="background:#1a1a2e;border-left:4px solid #9945ff;border-radius:0 12px 12px 0;padding:22px 26px;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#9945ff;line-height:1;">20s</p>
+        <p style="font-size:20px;color:#8a8a9a;">Per position cycle — real-time market data</p>
+      </div>
+      <div style="background:#1a1a2e;border-left:4px solid #14f195;border-radius:0 12px 12px 0;padding:22px 26px;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#14f195;line-height:1;">0</p>
+        <p style="font-size:20px;color:#8a8a9a;">Wallet popups during gameplay — agent key handles it</p>
+      </div>
+      <div style="background:#1a1a2e;border-left:4px solid #9945ff;border-radius:0 12px 12px 0;padding:22px 26px;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#9945ff;line-height:1;">3</p>
+        <p style="font-size:20px;color:#8a8a9a;">Lanes: Long, Flat, Short — one tap to switch</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. HOW IT WORKS -->
+<div class="slide" style="background:#0a0a0a;color:#f0f0eb;">
+  <p style="font-size:20px;font-weight:700;color:#9945ff;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">How it Works</p>
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:88px;line-height:1;color:#f0f0eb;margin-bottom:32px;">Lanes = Real Positions</h2>
+  <div style="display:flex;gap:20px;margin-bottom:24px;">
+    <div style="flex:1;background:rgba(20,241,149,.07);border:2px solid #14f195;border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:10px;">
+      <p style="font-size:20px;font-weight:700;color:#14f195;letter-spacing:2px;text-transform:uppercase;">Long Lane</p>
+      <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#14f195;line-height:1;">LONG</p>
+      <p style="font-size:20px;color:#a0d8b8;line-height:1.6;">Opens a long on SOL-PERP. Ride when betting price goes up.</p>
+    </div>
+    <div style="flex:1;background:rgba(255,255,255,.03);border:2px solid #3a3a5a;border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:10px;">
+      <p style="font-size:20px;font-weight:700;color:#5a5a7a;letter-spacing:2px;text-transform:uppercase;">Flat Lane</p>
+      <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#5a5a7a;line-height:1;">FLAT</p>
+      <p style="font-size:20px;color:#5a5a7a;line-height:1.6;">No directional position. Safe lane — no gains, no loss on price move.</p>
+    </div>
+    <div style="flex:1;background:rgba(255,80,80,.07);border:2px solid #ff5050;border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:10px;">
+      <p style="font-size:20px;font-weight:700;color:#ff5050;letter-spacing:2px;text-transform:uppercase;">Short Lane</p>
+      <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#ff5050;line-height:1;">SHORT</p>
+      <p style="font-size:20px;color:#f0a0a0;line-height:1.6;">Opens a short on SOL-PERP. Ride when betting price falls.</p>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:stretch;">
+    <div style="flex:1;background:#13131f;border:2px solid #2a2a3e;border-radius:10px;padding:16px 20px;text-align:center;">
+      <p style="font-size:20px;font-weight:700;color:#f0f0eb;">Player picks lane</p>
+      <p style="font-size:18px;color:#8a8a9a;">One tap switches direction</p>
+    </div>
+    <div style="font-size:24px;color:#4a4a6a;display:flex;align-items:center;padding:0 4px;">→</div>
+    <div style="flex:1;background:#13131f;border:2px solid #2a2a3e;border-radius:10px;padding:16px 20px;text-align:center;">
+      <p style="font-size:20px;font-weight:700;color:#f0f0eb;">Pacifica order fires</p>
+      <p style="font-size:18px;color:#8a8a9a;">Agent key signs — no popup</p>
+    </div>
+    <div style="font-size:24px;color:#4a4a6a;display:flex;align-items:center;padding:0 4px;">→</div>
+    <div style="flex:1;background:#13131f;border:2px solid #2a2a3e;border-radius:10px;padding:16px 20px;text-align:center;">
+      <p style="font-size:20px;font-weight:700;color:#f0f0eb;">Candle hits = close</p>
+      <p style="font-size:18px;color:#8a8a9a;">Obstacle = position closed</p>
+    </div>
+    <div style="font-size:24px;color:#4a4a6a;display:flex;align-items:center;padding:0 4px;">→</div>
+    <div style="flex:1;background:#13131f;border:2px solid #9945ff;border-radius:10px;padding:16px 20px;text-align:center;">
+      <p style="font-size:20px;font-weight:700;color:#f0f0eb;">P&amp;L on screen</p>
+      <p style="font-size:18px;color:#8a8a9a;">Real return + leaderboard</p>
+    </div>
+  </div>
+</div>
+
+<!-- 5. SKR -->
+<div class="slide" style="background:#0f0f1a;color:#f0f0eb;">
+  <p style="font-size:20px;font-weight:700;color:#9945ff;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">SKR Integration</p>
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:88px;line-height:1;color:#f0f0eb;margin-bottom:6px;">The SKR Shield</h2>
+  <p style="font-size:24px;font-weight:700;color:#9945ff;margin-bottom:28px;">Stake SKR before your run. Lose less when the market turns.</p>
+  <div style="display:flex;gap:48px;align-items:flex-start;flex:1;">
+    <div style="flex:1.2;display:flex;flex-direction:column;gap:18px;">
+      <p style="font-size:22px;color:#c8c8d8;line-height:1.7;">Players stake <b style="color:#f0f0eb;">Seeker (SKR) tokens</b> as a shield before each run. If the position closes at a loss, the shield absorbs a portion — then the staked SKR is <b style="color:#9945ff;">permanently burned</b> from supply.</p>
+      <p style="font-size:22px;color:#c8c8d8;line-height:1.7;">Every losing run removes SKR from circulation. Juggle is a <b style="color:#f0f0eb;">deflationary SKR sink</b> baked into gameplay.</p>
+      <div style="background:#1e1020;border:2px solid #9945ff;border-radius:12px;padding:18px 22px;display:flex;gap:14px;align-items:flex-start;">
+        <span style="font-size:28px;">🔥</span>
+        <p style="font-size:20px;color:#c8a8f0;line-height:1.5;">Burn signed by player's wallet via MWA using SPL Token Program burn instruction (index 8) — verifiable on-chain.</p>
+      </div>
+    </div>
+    <div style="flex:.9;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:14px;background:#1a1a2e;border:2px solid #2a2a3e;border-radius:12px;padding:16px 20px;">
+        <span style="font-size:26px;">🛡</span>
+        <div style="flex:1;">
+          <p style="font-size:22px;font-weight:700;color:#f0f0eb;">50 SKR staked</p>
+          <p style="font-size:18px;color:#8a8a9a;">Basic shield tier</p>
+        </div>
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#9945ff;line-height:1;">10%</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:#1a1a2e;border:2px solid #9945ff;border-radius:12px;padding:16px 20px;">
+        <span style="font-size:26px;">🛡</span>
+        <div style="flex:1;">
+          <p style="font-size:22px;font-weight:700;color:#f0f0eb;">150 SKR staked</p>
+          <p style="font-size:18px;color:#8a8a9a;">Enhanced protection</p>
+        </div>
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#c070ff;line-height:1;">30%</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;background:#1e1030;border:2px solid #9945ff;border-radius:12px;padding:16px 20px;">
+        <span style="font-size:26px;">⚔️</span>
+        <div style="flex:1;">
+          <p style="font-size:22px;font-weight:700;color:#f0f0eb;">250 SKR staked</p>
+          <p style="font-size:18px;color:#8a8a9a;">Maximum coverage</p>
+        </div>
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#e0a0ff;line-height:1;">50%</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. AI COACH -->
+<div class="slide" style="background:#0a0a0a;color:#f0f0eb;">
+  <p style="font-size:20px;font-weight:700;color:#14f195;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">AI Integration</p>
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:88px;line-height:1;color:#f0f0eb;margin-bottom:28px;">Your AI Coach</h2>
+  <div style="display:flex;gap:48px;align-items:flex-start;flex:1;">
+    <div style="flex:1;background:#13131f;border:2px solid #2a2a3e;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:12px;">
+      <div style="background:#1e2040;border:1px solid #3a3a5a;border-radius:10px;padding:12px 16px;align-self:flex-end;max-width:85%;">
+        <p style="font-size:20px;color:#b0b0d8;line-height:1.5;">Why did I lose that run?</p>
+      </div>
+      <div style="background:#0f1f1a;border:1px solid #2a4a3a;border-radius:10px;padding:12px 16px;max-width:90%;">
+        <p style="font-size:16px;font-weight:700;color:#14f195;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Coach</p>
+        <p style="font-size:20px;color:#a0f0c8;line-height:1.6;">SOL dropped 0.8% in 20s — you were long. Candle hit right as funding turned negative. Watch 15s momentum before committing long.</p>
+      </div>
+      <div style="background:#1e2040;border:1px solid #3a3a5a;border-radius:10px;padding:12px 16px;align-self:flex-end;max-width:85%;">
+        <p style="font-size:20px;color:#b0b0d8;line-height:1.5;">Should I stake 250 SKR next time?</p>
+      </div>
+      <div style="background:#0f1f1a;border:1px solid #2a4a3a;border-radius:10px;padding:12px 16px;max-width:90%;">
+        <p style="font-size:16px;font-weight:700;color:#14f195;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Coach</p>
+        <p style="font-size:20px;color:#a0f0c8;line-height:1.6;">Win rate 67% — you're over-shielding. Try 50 SKR and bank the rest.</p>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px;">
+      <div>
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:#f0f0eb;letter-spacing:1px;margin-bottom:8px;">Context-Aware Advice</h3>
+        <p style="font-size:22px;color:#8a8a9a;line-height:1.6;">Coach sees live SOL price, current position, P&amp;L, and streak. Answers are specific to your run.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#14f195;flex-shrink:0;margin-top:9px;"></div><p style="font-size:22px;color:#c8c8d8;line-height:1.5;">Explains P&amp;L outcomes after every run</p></div>
+        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#14f195;flex-shrink:0;margin-top:9px;"></div><p style="font-size:22px;color:#c8c8d8;line-height:1.5;">Advises on lane selection and market conditions</p></div>
+        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#14f195;flex-shrink:0;margin-top:9px;"></div><p style="font-size:22px;color:#c8c8d8;line-height:1.5;">Suggests optimal SKR shield tier from track record</p></div>
+        <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#14f195;flex-shrink:0;margin-top:9px;"></div><p style="font-size:22px;color:#c8c8d8;line-height:1.5;">Answers perp trading questions in plain language</p></div>
+      </div>
+      <div style="background:#0f1a10;border:2px solid #14f195;border-radius:12px;padding:16px 20px;">
+        <p style="font-size:20px;font-weight:700;color:#14f195;">Powered by Orbio Gateway <span style="color:#6acdab;font-weight:400;">→ GPT-4o-mini</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. TECH -->
+<div class="slide" style="background:#0f0f1a;color:#f0f0eb;">
+  <p style="font-size:20px;font-weight:700;color:#9945ff;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">Technology</p>
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:88px;line-height:1;color:#f0f0eb;margin-bottom:32px;">Tech Stack</h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;flex:1;">
+    <div style="background:#13131f;border:2px solid #2a2a3e;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:8px;">
+      <span style="font-size:32px;">🎮</span>
+      <h3 style="font-size:22px;font-weight:700;color:#f0f0eb;">Three.js + Vite</h3>
+      <p style="font-size:18px;color:#8a8a9a;line-height:1.5;">60fps WebGL 3D runner. Capacitor wraps it as a native Android APK.</p>
+      <p style="font-size:16px;font-weight:700;color:#9945ff;letter-spacing:1px;text-transform:uppercase;margin-top:auto;">Game Engine</p>
+    </div>
+    <div style="background:#13131f;border:2px solid #2a2a3e;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:8px;">
+      <span style="font-size:32px;">📱</span>
+      <h3 style="font-size:22px;font-weight:700;color:#f0f0eb;">Capacitor + Android</h3>
+      <p style="font-size:18px;color:#8a8a9a;line-height:1.5;">Kotlin plugin bridges MWA and haptics to the web layer.</p>
+      <p style="font-size:16px;font-weight:700;color:#9945ff;letter-spacing:1px;text-transform:uppercase;margin-top:auto;">Native Mobile</p>
+    </div>
+    <div style="background:#13131f;border:2px solid #2a2a3e;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:8px;">
+      <span style="font-size:32px;">🔧</span>
+      <h3 style="font-size:22px;font-weight:700;color:#f0f0eb;">Solana MWA v2</h3>
+      <p style="font-size:18px;color:#8a8a9a;line-height:1.5;">One-time agent key delegation — zero popup friction during gameplay.</p>
+      <p style="font-size:16px;font-weight:700;color:#9945ff;letter-spacing:1px;text-transform:uppercase;margin-top:auto;">Wallet</p>
+    </div>
+    <div style="background:#13131f;border:2px solid #9945ff;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:8px;">
+      <span style="font-size:32px;">📈</span>
+      <h3 style="font-size:22px;font-weight:700;color:#f0f0eb;">Pacifica Perps</h3>
+      <p style="font-size:18px;color:#8a8a9a;line-height:1.5;">Decentralised perpetuals on Solana devnet. Real order open/close via REST + WebSocket.</p>
+      <p style="font-size:16px;font-weight:700;color:#14f195;letter-spacing:1px;text-transform:uppercase;margin-top:auto;">Trading Core</p>
+    </div>
+    <div style="background:#13131f;border:2px solid #2a2a3e;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:8px;">
+      <span style="font-size:32px;">☁️</span>
+      <h3 style="font-size:22px;font-weight:700;color:#f0f0eb;">Cloudflare D1 + Workers</h3>
+      <p style="font-size:18px;color:#8a8a9a;line-height:1.5;">Serverless leaderboard. Daily and all-time rankings with verified P&amp;L in D1 SQLite.</p>
+      <p style="font-size:16px;font-weight:700;color:#9945ff;letter-spacing:1px;text-transform:uppercase;margin-top:auto;">Backend</p>
+    </div>
+    <div style="background:#13131f;border:2px solid #2a2a3e;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:8px;">
+      <span style="font-size:32px;">🤖</span>
+      <h3 style="font-size:22px;font-weight:700;color:#f0f0eb;">Orbio + GPT-4o-mini</h3>
+      <p style="font-size:18px;color:#8a8a9a;line-height:1.5;">AI coach via OpenAI-compatible proxy. Live price, position, run history as context.</p>
+      <p style="font-size:16px;font-weight:700;color:#9945ff;letter-spacing:1px;text-transform:uppercase;margin-top:auto;">AI</p>
+    </div>
+  </div>
+</div>
+
+<!-- 8. MOBILE FIRST -->
+<div class="slide" style="background:#0a0a0a;color:#f0f0eb;">
+  <p style="font-size:20px;font-weight:700;color:#14f195;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">Built for Solana Mobile</p>
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:80px;line-height:1;color:#f0f0eb;margin-bottom:28px;">Mobile First, Not Mobile Port</h2>
+  <div style="display:flex;gap:48px;align-items:flex-start;flex:1;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:24px;">
+      <div style="display:flex;gap:18px;align-items:flex-start;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#14f195;line-height:1;width:48px;flex-shrink:0;">01</p>
+        <div><h3 style="font-size:22px;font-weight:700;color:#f0f0eb;margin-bottom:6px;">Mobile Wallet Adapter v2</h3><p style="font-size:20px;color:#8a8a9a;line-height:1.5;">Native Kotlin plugin connects to Phantom, Solflare, and other MWA wallets on device.</p></div>
+      </div>
+      <div style="display:flex;gap:18px;align-items:flex-start;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#14f195;line-height:1;width:48px;flex-shrink:0;">02</p>
+        <div><h3 style="font-size:22px;font-weight:700;color:#f0f0eb;margin-bottom:6px;">Agent Key Delegation</h3><p style="font-size:20px;color:#8a8a9a;line-height:1.5;">Player signs once at setup. All in-run orders signed by delegated key — no popup interrupts gameplay.</p></div>
+      </div>
+      <div style="display:flex;gap:18px;align-items:flex-start;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#14f195;line-height:1;width:48px;flex-shrink:0;">03</p>
+        <div><h3 style="font-size:22px;font-weight:700;color:#f0f0eb;margin-bottom:6px;">Haptic Feedback</h3><p style="font-size:20px;color:#8a8a9a;line-height:1.5;">Custom Kotlin haptics bridge. Different patterns for lane switch, cashout, position close.</p></div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px;">
+      <div style="display:flex;gap:18px;align-items:flex-start;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#14f195;line-height:1;width:48px;flex-shrink:0;">04</p>
+        <div><h3 style="font-size:22px;font-weight:700;color:#f0f0eb;margin-bottom:6px;">Safe Area + Touch UX</h3><p style="font-size:20px;color:#8a8a9a;line-height:1.5;">Full respect for notch and home-bar safe areas. Large tap targets for one-thumb play.</p></div>
+      </div>
+      <div style="background:#0f1a10;border:2px solid #14f195;border-radius:16px;padding:26px;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:38px;color:#14f195;letter-spacing:1px;margin-bottom:10px;">Built for Seeker</h3>
+        <p style="font-size:22px;color:#a0d8b0;line-height:1.7;">Targeting the Solana dApp Store for Seeker device. SKR integration makes SKR holders the game's best players — the shield mechanic is unique to Seeker's token ecosystem.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 9. NEXT -->
+<div class="slide" style="background:#0f0f1a;color:#f0f0eb;">
+  <div style="position:absolute;left:0;bottom:0;right:0;height:6px;background:linear-gradient(90deg,#9945ff,#14f195);"></div>
+  <p style="font-size:20px;font-weight:700;color:#9945ff;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;">What's Next</p>
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:88px;line-height:1;color:#f0f0eb;margin-bottom:28px;">Roadmap</h2>
+  <div style="display:flex;gap:24px;flex:1;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:flex-start;gap:12px;background:#13131f;border:2px solid #14f195;border-radius:12px;padding:18px 20px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:#14f195;flex-shrink:0;margin-top:6px;"></div>
+        <div><h3 style="font-size:20px;font-weight:700;color:#f0f0eb;margin-bottom:4px;">Mainnet SKR Integration</h3><p style="font-size:18px;color:#8a8a9a;line-height:1.4;">Switch from devnet mock to real Seeker token. Every losing run burns real SKR.</p></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;background:#13131f;border:2px solid #14f195;border-radius:12px;padding:18px 20px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:#14f195;flex-shrink:0;margin-top:6px;"></div>
+        <div><h3 style="font-size:20px;font-weight:700;color:#f0f0eb;margin-bottom:4px;">Solana dApp Store</h3><p style="font-size:18px;color:#8a8a9a;line-height:1.4;">Full APK submission to Seeker's official app store.</p></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;background:#13131f;border:2px solid #2a2a3e;border-radius:12px;padding:18px 20px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:#9945ff;flex-shrink:0;margin-top:6px;"></div>
+        <div><h3 style="font-size:20px;font-weight:700;color:#f0f0eb;margin-bottom:4px;">More Markets</h3><p style="font-size:18px;color:#8a8a9a;line-height:1.4;">BTC-PERP and ETH-PERP lanes. Multi-asset runs.</p></div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:flex-start;gap:12px;background:#13131f;border:2px solid #2a2a3e;border-radius:12px;padding:18px 20px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:#9945ff;flex-shrink:0;margin-top:6px;"></div>
+        <div><h3 style="font-size:20px;font-weight:700;color:#f0f0eb;margin-bottom:4px;">Tournament Mode</h3><p style="font-size:18px;color:#8a8a9a;line-height:1.4;">Coordinated start, shared pot, top P&amp;L splits prize. SKR as entry token.</p></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;background:#13131f;border:2px solid #2a2a3e;border-radius:12px;padding:18px 20px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:#9945ff;flex-shrink:0;margin-top:6px;"></div>
+        <div><h3 style="font-size:20px;font-weight:700;color:#f0f0eb;margin-bottom:4px;">Mainnet Trading</h3><p style="font-size:18px;color:#8a8a9a;line-height:1.4;">Optional real-money mode. Fastest way to open a Pacifica position on mobile.</p></div>
+      </div>
+      <div style="background:linear-gradient(135deg,#1a0d2e,#0d1a1a);border:2px solid #9945ff;border-radius:16px;padding:24px;text-align:center;flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:44px;color:#f0f0eb;letter-spacing:2px;margin-bottom:8px;">Play it. Burn SKR. Climb the board.</h3>
+        <p style="font-size:20px;color:#8a8a9a;">github.com/sammy-XXIV/juggle</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+
+<div id="nav"></div>
+<div id="counter"></div>
+<div id="arrows">
+  <button class="arr" id="prev">&#8592;</button>
+  <button class="arr" id="next-btn">&#8594;</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const nav = document.getElementById('nav');
+const counter = document.getElementById('counter');
+let cur = 0;
+
+function scale() {
+  const stage = document.getElementById('stage');
+  const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+  stage.style.transform = `scale(${s})`;
+  stage.style.left = ((window.innerWidth - 1920 * s) / 2) + 'px';
+  stage.style.top = ((window.innerHeight - 1080 * s) / 2) + 'px';
+}
+
+function go(n) {
+  slides[cur].classList.remove('active');
+  cur = (n + slides.length) % slides.length;
+  slides[cur].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+  counter.textContent = (cur + 1) + ' / ' + slides.length;
+}
+
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => go(i);
+  nav.appendChild(d);
+});
+counter.textContent = '1 / ' + slides.length;
+
+document.getElementById('prev').onclick = () => go(cur - 1);
+document.getElementById('next-btn').onclick = () => go(cur + 1);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(cur + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(cur - 1);
+});
+
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 50) go(cur + (dx < 0 ? 1 : -1));
+}, {passive:true});
+
+window.addEventListener('resize', scale);
+scale();
+</script>
+</body>
+</html>
