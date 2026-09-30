@@ -6,7 +6,24 @@ interface Env {
   MARKET: string;
   MAX_LEVERAGE: string;
   ORBIO_API_KEY: string;
+  SOLANA_RPC_URL: string;
+  SKR_MINT: string;
 }
+
+interface ParsedInstruction {
+  program?: string;
+  parsed?: { type: string; info: { mint?: string; authority?: string; amount?: string; tokenAmount?: { amount: string } } };
+}
+
+interface ParsedTransaction {
+  blockTime: number | null;
+  meta: { err: unknown } | null;
+  transaction: { message: { instructions: ParsedInstruction[] } };
+}
+
+const SKR_DECIMALS = 6;
+const SKR_FULL_SHIELD = 250;
+const SKR_MAX_COVERAGE = 0.5;
 
 interface Fill {
   symbol: string;
@@ -62,6 +79,30 @@ async function fetchFills(env: Env, account: string, start: number, end: number)
   return fills.filter((f) => f.symbol === env.MARKET);
 }
 
+/** Reads the burn from Solana and returns how much SKR this account burned in it, in whole tokens. */
+export async function verifySkrBurn(env: Env, signature: string, account: string, startedAt: number, endedAt: number): Promise<number> {
+  const res = await fetch(env.SOLANA_RPC_URL, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "getTransaction",
+      params: [signature, { encoding: "jsonParsed", commitment: "confirmed", maxSupportedTransactionVersion: 0 }],
+    }),
+  });
+  const { result } = (await res.json()) as { result: ParsedTransaction | null };
+  if (!result || result.meta?.err) throw new Error("SKR burn not found on-chain");
+  const at = (result.blockTime ?? 0) * 1000;
+  if (at < startedAt - 60_000 || at > endedAt + 10 * 60_000) throw new Error("SKR burn does not belong to this run");
+  const raw = result.transaction.message.instructions
+    .filter((ix) => ix.program === "spl-token" && (ix.parsed?.type === "burn" || ix.parsed?.type === "burnChecked"))
+    .filter((ix) => ix.parsed!.info.mint === env.SKR_MINT && ix.parsed!.info.authority === account)
+    .reduce((sum, ix) => sum + Number(ix.parsed!.info.amount ?? ix.parsed!.info.tokenAmount?.amount ?? 0), 0);
+  if (raw <= 0) throw new Error("Transaction is not an SKR burn from this wallet");
+  return raw / 10 ** SKR_DECIMALS;
+}
+
 async function registerName(req: Request, env: Env): Promise<Response> {
   const { account, name, timestamp, signature } = (await req.json()) as Record<string, string & number>;
   if (!account || !signature || typeof timestamp !== "number") return fail("Missing fields");
@@ -85,7 +126,7 @@ async function getPlayer(account: string, env: Env): Promise<Response> {
 
 /** Scores a run from the player's actual Pacifica fills, never from numbers the app reports. */
 async function submitRun(req: Request, env: Env): Promise<Response> {
-  const { account, startedAt, endedAt, stake } = (await req.json()) as Record<string, string & number>;
+  const { account, startedAt, endedAt, stake, skrBurnSig } = (await req.json()) as Record<string, string & number>;
   const now = Date.now();
   if (!account || [startedAt, endedAt, stake].some((v) => typeof v !== "number")) return fail("Missing fields");
   if (endedAt < startedAt || endedAt - startedAt > MAX_RUN_MS || endedAt > now + 60_000) return fail("Invalid run window");
@@ -101,14 +142,34 @@ async function submitRun(req: Request, env: Env): Promise<Response> {
     0,
   );
   const effectiveStake = Math.max(stake, largestPosition / Number(env.MAX_LEVERAGE), MIN_STAKE);
-  const returnPct = (pnl / effectiveStake) * 100;
+
+  // SKR shield settlement: only a verified, unused on-chain burn covers part of a losing run.
+  let shield = 0;
+  let skrBurned = 0;
+  let shieldError: string | null = null;
+  const burnSig = typeof skrBurnSig === "string" && skrBurnSig ? skrBurnSig : null;
+  if (burnSig && pnl < 0) {
+    const used = await env.DB.prepare(
+      "SELECT 1 FROM runs WHERE skr_burn_sig = ?1 AND NOT (account = ?2 AND started_at = ?3)",
+    ).bind(burnSig, account, startedAt).first();
+    try {
+      if (used) throw new Error("This SKR burn was already used for another run");
+      skrBurned = await verifySkrBurn(env, burnSig, account, startedAt, endedAt);
+      shield = -pnl * Math.min(skrBurned / SKR_FULL_SHIELD, 1) * SKR_MAX_COVERAGE;
+    } catch (e) {
+      skrBurned = 0;
+      shieldError = e instanceof Error ? e.message : "Could not verify SKR burn";
+    }
+  }
+  const returnPct = ((pnl + shield) / effectiveStake) * 100;
 
   await env.DB.prepare(
-    `INSERT INTO runs (account, started_at, ended_at, stake, pnl, return_pct, fills)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+    `INSERT INTO runs (account, started_at, ended_at, stake, pnl, return_pct, fills, shield, skr_burned, skr_burn_sig)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
      ON CONFLICT(account, started_at) DO UPDATE SET ended_at = excluded.ended_at, stake = excluded.stake,
-       pnl = excluded.pnl, return_pct = excluded.return_pct, fills = excluded.fills`,
-  ).bind(account, startedAt, endedAt, effectiveStake, pnl, returnPct, fills.length).run();
+       pnl = excluded.pnl, return_pct = excluded.return_pct, fills = excluded.fills,
+       shield = excluded.shield, skr_burned = excluded.skr_burned, skr_burn_sig = excluded.skr_burn_sig`,
+  ).bind(account, startedAt, endedAt, effectiveStake, pnl, returnPct, fills.length, shield, skrBurned, skrBurned > 0 ? burnSig : null).run();
 
   const rank = await env.DB.prepare(
     `SELECT COUNT(*) + 1 AS rank FROM (
@@ -116,7 +177,7 @@ async function submitRun(req: Request, env: Env): Promise<Response> {
      ) WHERE best > ?2`,
   ).bind(startOfUtcDay(now), returnPct).first<{ rank: number }>();
 
-  return json({ pnl, returnPct, stake: effectiveStake, fills: fills.length, dailyRank: rank?.rank ?? null });
+  return json({ pnl, shield, skrBurned, shieldError, returnPct, stake: effectiveStake, fills: fills.length, dailyRank: rank?.rank ?? null });
 }
 
 function startOfUtcDay(now: number): number {
@@ -139,7 +200,7 @@ async function chat(req: Request, env: Env): Promise<Response> {
   const { question, context } = await req.json<{ question: string; context: string }>();
   if (!question?.trim()) return fail("No question provided", 400);
 
-  const systemPrompt = `You are Juggle AI, the in-game assistant for Juggle — a Solana mobile game where players run a BONK dog on 3 lanes (LEFT=SHORT SOL, MIDDLE=FLAT, RIGHT=LONG SOL) and their lane choice becomes a real leveraged perpetuals trade on Pacifica DEX every 20 seconds. Players collect SKR coins and can stake SKR as loss insurance.
+  const systemPrompt = `You are Juggle AI, the in-game assistant for Juggle — a Solana mobile game where players run a BONK dog on 3 lanes (LEFT=SHORT SOL, MIDDLE=FLAT meaning no open position so price moves don't affect P&L, RIGHT=LONG SOL) and their lane choice becomes a real leveraged perpetuals trade on Pacifica DEX every 20 seconds. Players collect SKR coins and can stake SKR as loss insurance.
 
 Rules:
 - Keep answers short, sharp, direct. No markdown, no asterisks.

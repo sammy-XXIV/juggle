@@ -5,7 +5,7 @@ import type { MarketSpec } from "./pacifica/api";
 import { TradeEngine } from "./trade/TradeEngine";
 import { fetchBoard, getName, registerName, submitRun } from "./leaderboard";
 import { MARKET } from "./config";
-import { ChatAI } from "./ui/ChatAI";
+import { ChatAI, debriefRun } from "./ui/ChatAI";
 import { Haptics } from "./haptics";
 import { Sounds } from "./sounds";
 import { startMusic, stopMusic } from "./music";
@@ -285,6 +285,11 @@ action("btn-start", async () => {
     return;
   }
   if (game.price <= 0) throw new Error("Waiting for live prices, try again in a moment");
+  if (skrStaked > 0 && (await account!.walletSkr()) < skrStaked) {
+    stakeError.textContent = `You need ${skrStaked} SKR in your wallet for this shield.`;
+    stakeError.hidden = false;
+    return;
+  }
   const next = new TradeEngine(account!, await loadMarket(), stake, skrStaked);
   await next.begin(game.price, Date.now());
   engine = next;
@@ -313,12 +318,16 @@ const REASON_TITLE: Record<RunEndReason, string> = {
 };
 
 game.onRunEnd = (reason) => void finishRun(reason);
+let debriefToken = 0;
 
 async function finishRun(reason: RunEndReason): Promise<void> {
   stopMusic();
   show("results");
   $("result-title").textContent = REASON_TITLE[reason];
   $("result-rank").textContent = "";
+  $("result-shield").hidden = true;
+  $("result-coach").hidden = true;
+  debriefToken++;
 
   if (!engine) {
     $("result-pnl").textContent = "PRACTICE";
@@ -335,19 +344,43 @@ async function finishRun(reason: RunEndReason): Promise<void> {
   $("result-pnl").textContent = `${sign}$${Math.abs(run.pnl).toFixed(2)}`;
   $("result-detail").textContent = `${sign}${Math.abs(run.returnPct).toFixed(1)}% on $${run.stake} · best streak ${run.bestStreak}`;
   const shieldEl = $("result-shield");
-  if (run.skrBurned > 0) {
-    shieldEl.textContent = `🛡 SKR Shield absorbed $${run.shieldAbsorbed.toFixed(2)} · ${run.skrBurned} SKR burned`;
+  shieldEl.replaceChildren();
+  shieldEl.hidden = true;
+  if (run.skrBurnSig) {
+    const link = document.createElement("a");
+    link.href = `https://explorer.solana.com/tx/${run.skrBurnSig}?cluster=devnet`;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = "view burn";
+    shieldEl.append(`SKR Shield absorbed $${run.shieldAbsorbed.toFixed(2)} · ${run.skrBurned} SKR burned · `, link);
     shieldEl.hidden = false;
-  } else {
-    shieldEl.hidden = true;
+  } else if (run.skrBurnError) {
+    shieldEl.textContent = "SKR burn not confirmed, so no shield was applied";
+    shieldEl.hidden = false;
   }
+
+  const coach = $("result-coach");
+  coach.hidden = true;
+  const token = ++debriefToken;
+  debriefRun(run)
+    .then((text) => {
+      if (token !== debriefToken) return;
+      const label = document.createElement("b");
+      label.textContent = "AI COACH";
+      coach.replaceChildren(label, text);
+      coach.hidden = false;
+    })
+    .catch(() => {});
 
   $("result-rank").textContent = "Submitting to the leaderboard…";
   try {
     const scored = await submitRun(account!.address, run);
+    const shield = scored.shield > 0
+      ? ` · shield +$${scored.shield.toFixed(2)} verified on-chain`
+      : scored.shieldError ? ` · shield rejected: ${scored.shieldError}` : "";
     $("result-rank").textContent = scored.dailyRank
-      ? `Verified ${scored.returnPct.toFixed(1)}% · #${scored.dailyRank} today`
-      : `Verified ${scored.returnPct.toFixed(1)}%`;
+      ? `Verified ${scored.returnPct.toFixed(1)}%${shield} · #${scored.dailyRank} today`
+      : `Verified ${scored.returnPct.toFixed(1)}%${shield}`;
   } catch (e) {
     $("result-rank").textContent = errorText(e);
   }

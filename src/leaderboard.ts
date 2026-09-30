@@ -12,6 +12,8 @@ export interface BoardEntry {
 
 export interface ScoredRun {
   pnl: number;
+  shield: number;
+  shieldError: string | null;
   returnPct: number;
   dailyRank: number | null;
 }
@@ -59,6 +61,7 @@ export function submitRun(account: string, run: RunResult): Promise<ScoredRun> {
     startedAt: run.startedAt,
     endedAt: run.endedAt,
     stake: run.stake,
+    skrBurnSig: run.skrBurnSig,
   });
 }
 

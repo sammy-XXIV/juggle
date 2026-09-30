@@ -221,6 +221,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);font-fami
   </div>
 </section>
 
+<!-- SAFETY -->
+<section class="slide sky center" aria-label="Trading safety">
+  <span class="kicker a" style="--i:0">Safety Model</span>
+  <h2 class="title a" style="--i:1">Real orders, <span class="y">hard limits</span></h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:44px">
+    <div class="card a" style="--i:2"><h3>Testnet only</h3><p>Pacifica testnet on Solana devnet with test USDC. No real funds at risk.</p></div>
+    <div class="card a" style="--i:3"><h3>On-device agent key</h3><p>Bound once by a wallet signature. Juggle only uses it for leverage and market orders.</p></div>
+    <div class="card a" style="--i:4"><h3>Sized by you</h3><p>Order = stake × leverage. Leverage capped at 20x and the market max. 0.5% max slippage.</p></div>
+    <div class="card a" style="--i:5;background:var(--yellow)"><h3>Loss stop</h3><p>Run ends automatically when P&amp;L hits −stake, and the position closes.</p></div>
+    <div class="card a" style="--i:6"><h3>No stray orders</h3><p>Orders fire only during a run, one at a time. Every close is reduce-only.</p></div>
+    <div class="card a" style="--i:7"><h3>Scored from fills</h3><p>Leaderboard reads real Pacifica fills, never numbers from the app.</p></div>
+  </div>
+</section>
+
 <!-- 5 SKR -->
 <section class="slide sky center" aria-label="SKR shield">
   <span class="kicker a" style="--i:0">SKR Integration</span>
@@ -229,15 +243,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);font-fami
     <div style="flex:1;display:flex;flex-direction:column;gap:22px">
       <div class="card a" style="--i:2"><p style="font-size:29px;margin:0;color:var(--ink)">Stake <b>Seeker (SKR)</b> before a run. If the run ends in a loss, the shield absorbs part of it, and the staked SKR is <b>burned on-chain</b>.</p></div>
       <div class="card a" style="--i:3;display:flex;gap:24px;align-items:center;background:var(--ink);color:var(--paper)">
-        <svg class="flame" width="84" height="100" viewBox="0 0 84 100" aria-hidden="true"><path d="M42 4C48 26 74 38 74 64a32 32 0 0 1-64 0c0-16 10-24 16-30 0 12 6 18 12 18C38 38 30 22 42 4z" fill="#ff5a5a" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><path d="M42 50c4 10 16 14 16 26a16 16 0 0 1-32 0c0-8 6-12 8-16 2 6 6 8 8 8-2-6-4-12 0-18z" fill="#ffd23f"/></svg>
-        <p style="margin:0;color:var(--paper);font-size:27px;line-height:1.45"><b style="color:var(--yellow)">Deflationary sink.</b> Every losing shielded run removes SKR from supply. SPL Token burn, signed by the player via MWA.</p>
+        <svg class="flame" style="flex-shrink:0" width="84" height="100" viewBox="0 0 84 100" aria-hidden="true"><path d="M42 4C48 26 74 38 74 64a32 32 0 0 1-64 0c0-16 10-24 16-30 0 12 6 18 12 18C38 38 30 22 42 4z" fill="#ff5a5a" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><path d="M42 50c4 10 16 14 16 26a16 16 0 0 1-32 0c0-8 6-12 8-16 2 6 6 8 8 8-2-6-4-12 0-18z" fill="#ffd23f"/></svg>
+        <p style="margin:0;color:var(--paper);font-size:26px;line-height:1.45"><b style="color:var(--yellow)">Verified, not trusted.</b> Player signs an SPL burn via MWA. The leaderboard fetches it on-chain, checks mint, signer and run window, blocks reuse, then pays the shield.</p>
       </div>
     </div>
     <div style="flex:1;display:flex;flex-direction:column;gap:22px;justify-content:center">
       <div class="card tier a" style="--i:4"><span class="amt">50 SKR</span><div class="bar"><span style="--w:20%;--i:4"></span></div><span class="pct">10%</span></div>
       <div class="card tier a" style="--i:5"><span class="amt">150 SKR</span><div class="bar"><span style="--w:60%;--i:5"></span></div><span class="pct">30%</span></div>
       <div class="card tier a" style="--i:6"><span class="amt">250 SKR</span><div class="bar"><span style="--w:100%;--i:6"></span></div><span class="pct">50%</span></div>
-      <p class="a" style="--i:7;font-size:24px;font-weight:700;text-align:right">Loss covered = min(SKR / 250, 1) × 50%</p>
+      <p class="a" style="--i:7;font-size:24px;font-weight:700;text-align:right">Loss covered = min(SKR / 250, 1) × 50%<br><a href="https://explorer.solana.com/tx/5rUKjwwmRizVGQezscnCJSnu45ZwNsQ3bPpbG6CbGZDMAp26CoU1VWP1TfRR46wVMSxQntuMNznQAF7eXzT6Eaeg?cluster=devnet" style="color:var(--ink)">Devnet burn proof: 150 SKR, supply 150 → 0</a></p>
     </div>
   </div>
 </section>
@@ -248,16 +262,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);font-fami
   <h2 class="title a" style="--i:1">An AI coach <span class="p">in the run</span></h2>
   <div class="row" style="margin-top:46px;gap:60px">
     <div style="flex:1.1;display:flex;flex-direction:column;gap:18px">
-      <div class="bubble me a" style="--i:2">Why did I lose that run?</div>
-      <div class="bubble ai a" style="--i:5"><b>Coach</b>SOL dipped while you sat in the long lane at 10x. Next round, drop the crank or wait in flat.</div>
-      <div class="bubble me a" style="--i:8">Should I shield with more SKR?</div>
-      <div class="bubble ai a" style="--i:11"><b>Coach</b>At this leverage, 150 SKR covers 30% of a loss. Worth it on choppy rounds.</div>
-      <p class="note a" style="--i:12">Illustrative exchange</p>
+      <div class="bubble me a" style="--i:2;font-size:22px">R1 LONG 20x · SOL +0.041% = correct<br>R2 LONG 20x · SOL +0.012% = correct<br>R3 LONG 20x · SOL −0.090% = wrong<br>R4 SHORT 20x · SOL +0.055% = wrong</div>
+      <div class="bubble ai a" style="--i:5"><b>Auto debrief</b>The best streak of 2 was achieved with correct LONG calls on R1 and R2, but the wrong calls on R3 and R4 led to a negative P&amp;L. For the next run, consider diversifying lane choices and reducing leverage to mitigate risk.</div>
+      <p class="note a" style="--i:6">Real output from the live /chat endpoint, sample round log</p>
     </div>
     <div style="flex:.9" class="pts">
-      <div class="pt a" style="--i:3"><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></div><div><h3>Sees your run</h3><p>Live SOL price, lane, leverage, P&amp;L and streak go into every answer.</p></div></div>
-      <div class="pt a" style="--i:4"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg></div><div><h3>Shield advice</h3><p>Explains how SKR coverage changes your downside.</p></div></div>
-      <div class="pt a" style="--i:6"><div class="ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><h3>Plain language</h3><p>Perp concepts explained without jargon, mid-session.</p></div></div>
+      <div class="pt a" style="--i:3"><div class="ico"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></div><div><h3>Debrief every run</h3><p>The game grades each round, the model explains what decided the result and gives one tip.</p></div></div>
+      <div class="pt a" style="--i:4"><div class="ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><h3>Live coach chat</h3><p>Every question carries SOL price, lane, position, leverage, P&amp;L, streak and shield tier.</p></div></div>
+      <div class="pt a" style="--i:6"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg></div><div><h3>Advises, never trades</h3><p>Orders only come from your lane. The AI explains, you decide.</p></div></div>
       <div class="pt a" style="--i:7"><div class="ico" style="background:var(--green)"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 14h.01M15 14h.01"/></svg></div><div><h3>Orbio gateway</h3><p>GPT-4o-mini behind a Cloudflare Worker proxy. Key never ships in the app.</p></div></div>
     </div>
   </div>
@@ -269,7 +281,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);font-fami
   <h2 class="title a" style="--i:1">The stack</h2>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:46px">
     <div class="card a" style="--i:2"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg></div><h3 style="margin-top:20px">Three.js + Vite</h3><p>WebGL 3D runner with the BONK character, clouds and candle obstacles.</p></div>
-    <div class="card a" style="--i:3"><div class="ico"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg></div><h3 style="margin-top:20px">Capacitor Android</h3><p>Native APK. Kotlin plugins for MWA and haptics.</p></div>
+    <div class="card a" style="--i:3"><div class="ico"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg></div><h3 style="margin-top:20px">Capacitor Android</h3><p>Native APK. Kotlin plugin wraps MWA clientlib 2.1.1.</p></div>
     <div class="card a" style="--i:4"><div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M16 13h2M3 10h18"/></svg></div><h3 style="margin-top:20px">Solana MWA</h3><p>Wallet connect plus one-time agent key bind for popup-free play.</p></div>
     <div class="card a" style="--i:5;background:var(--yellow)"><div class="ico" style="background:var(--paper)"><svg viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></div><h3 style="margin-top:20px">Pacifica perps</h3><p>Real SOL-PERP orders on testnet. WebSocket price feed.</p></div>
     <div class="card a" style="--i:6"><div class="ico"><svg viewBox="0 0 24 24"><path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 1 0 6 17.8"/><path d="M6 19h11.5"/></svg></div><h3 style="margin-top:20px">Cloudflare D1</h3><p>Worker-backed leaderboard with daily and all-time boards.</p></div>

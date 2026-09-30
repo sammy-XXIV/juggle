@@ -15,6 +15,12 @@ export function laneToDirection(lane: number): Direction {
   return lane === 0 ? -1 : lane === 2 ? 1 : 0;
 }
 
+export interface RoundLog {
+  dir: Direction;
+  leverage: number;
+  movePct: number;
+}
+
 export interface RunResult {
   startedAt: number;
   endedAt: number;
@@ -22,7 +28,11 @@ export interface RunResult {
   pnl: number;
   returnPct: number;
   bestStreak: number;
+  rounds: RoundLog[];
+  skrStaked: number;
   skrBurned: number;
+  skrBurnSig: string | null;
+  skrBurnError: string | null;
   shieldAbsorbed: number;
 }
 
@@ -33,9 +43,10 @@ export interface RunResult {
 export class TradeEngine {
   streak = 0;
   bestStreak = 0;
-  crank = CRANK_LEVELS[CRANK_LEVELS.length - 1]; // start at 5x
+  crank = CRANK_LEVELS[CRANK_LEVELS.length - 1];
   pnl = 0;
   lastError: string | null = null;
+  readonly rounds: RoundLog[] = [];
 
   private readonly account: TradingAccount;
   private readonly market: MarketSpec;
@@ -51,7 +62,7 @@ export class TradeEngine {
   private ended = false;
   private equityTimer: number | undefined;
 
-  private readonly skrStaked: number;
+  readonly skrStaked: number;
 
   constructor(account: TradingAccount, market: MarketSpec, stake: number, skrStaked = 0) {
     this.account = account;
@@ -130,17 +141,19 @@ export class TradeEngine {
     await this.moveTo(0, true);
     await this.refreshPnl();
 
+    // Shield only pays out once the burn is confirmed on-chain; the leaderboard re-verifies the signature.
     let skrBurned = 0;
     let shieldAbsorbed = 0;
+    let skrBurnSig: string | null = null;
+    let skrBurnError: string | null = null;
     if (this.pnl < 0 && this.skrStaked > 0) {
-      const coverage = this.skrCoveragePct / 100;
-      shieldAbsorbed = Math.min(Math.abs(this.pnl) * coverage, Math.abs(this.pnl));
-      skrBurned = this.skrStaked;
-      this.pnl += shieldAbsorbed;
       try {
-        await this.account.burnSkr(skrBurned);
+        skrBurnSig = await this.account.burnSkr(this.skrStaked);
+        skrBurned = this.skrStaked;
+        shieldAbsorbed = Math.abs(this.pnl) * (this.skrCoveragePct / 100);
+        this.pnl += shieldAbsorbed;
       } catch (e) {
-        console.warn("[SKR Shield] Burn tx failed:", e);
+        skrBurnError = e instanceof Error ? e.message : String(e);
       }
     }
 
@@ -151,12 +164,18 @@ export class TradeEngine {
       pnl: this.pnl,
       returnPct: this.returnPct,
       bestStreak: this.bestStreak,
+      rounds: this.rounds,
+      skrStaked: this.skrStaked,
       skrBurned,
+      skrBurnSig,
+      skrBurnError,
       shieldAbsorbed,
     };
   }
 
   private scoreRound(): void {
+    const movePct = this.roundStartPrice > 0 ? ((this.price - this.roundStartPrice) / this.roundStartPrice) * 100 : 0;
+    this.rounds.push({ dir: this.held, leverage: this.crank, movePct });
     if (this.held === 0) return;
     const move = Math.sign(this.price - this.roundStartPrice);
     if (move === this.held) {
