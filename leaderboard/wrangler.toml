@@ -6,7 +6,6 @@ compatibility_date = "2026-09-01"
 PACIFICA_API_URL = "https://test-api.pacifica.fi/api/v1"
 MARKET = "SOL"
 MAX_LEVERAGE = "5"
-SOLANA_RPC_URL = "https://api.devnet.solana.com"
 SKR_MINT = "3zcV6Y9yxbYMgbyc2GSnfaFkMSx8tKX7pjvBfTf2w7qr"
 
 [[d1_databases]]

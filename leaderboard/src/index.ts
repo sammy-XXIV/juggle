@@ -81,18 +81,32 @@ async function fetchFills(env: Env, account: string, start: number, end: number)
 
 /** Reads the burn from Solana and returns how much SKR this account burned in it, in whole tokens. */
 export async function verifySkrBurn(env: Env, signature: string, account: string, startedAt: number, endedAt: number): Promise<number> {
-  const res = await fetch(env.SOLANA_RPC_URL, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: 1,
-      method: "getTransaction",
-      params: [signature, { encoding: "jsonParsed", commitment: "confirmed", maxSupportedTransactionVersion: 0 }],
-    }),
-  });
-  const { result } = (await res.json()) as { result: ParsedTransaction | null };
-  if (!result || result.meta?.err) throw new Error("SKR burn not found on-chain");
+  // RPC nodes behind the load balancer can lag the node that confirmed the burn by a few seconds.
+  let result: ParsedTransaction | null = null;
+  let lastError = "";
+  for (let attempt = 0; attempt < 8 && !result; attempt++) {
+    if (attempt) await new Promise((r) => setTimeout(r, 1500));
+    const res = await fetch(env.SOLANA_RPC_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getTransaction",
+        params: [signature, { encoding: "jsonParsed", commitment: "confirmed", maxSupportedTransactionVersion: 0 }],
+      }),
+    });
+    const body = await res.text();
+    try {
+      const parsed = JSON.parse(body) as { result?: ParsedTransaction | null; error?: { message: string } };
+      if (parsed.error) lastError = parsed.error.message;
+      result = parsed.result ?? null;
+    } catch {
+      lastError = `RPC ${res.status}: ${body.slice(0, 80)}`;
+    }
+  }
+  if (!result) throw new Error(lastError ? `SKR burn lookup failed (${lastError})` : "SKR burn not found on-chain");
+  if (result.meta?.err) throw new Error("SKR burn failed on-chain");
   const at = (result.blockTime ?? 0) * 1000;
   if (at < startedAt - 60_000 || at > endedAt + 10 * 60_000) throw new Error("SKR burn does not belong to this run");
   const raw = result.transaction.message.instructions
@@ -204,6 +218,8 @@ async function chat(req: Request, env: Env): Promise<Response> {
 
 Rules:
 - Keep answers short, sharp, direct. No markdown, no asterisks.
+- In run logs, a round marked "no position" had no P&L effect. Correct calls add P&L, wrong calls subtract it, and every order pays a small trading fee. Never say a correct call caused a loss: if the run lost money despite correct calls, name the wrong calls or the fees as the cause. The SKR shield burn never adds to a loss: it spends SKR to cover part of the USD loss.
+- Risk rules, these override any request: Juggle is testnet practice. Never promise, guarantee or predict profit or where SOL will go; say nobody can know the next 20 seconds and suggest the FLAT lane when unsure. Never tell the player to raise leverage to win more or to win back losses; whenever leverage comes up, say higher leverage makes losses bigger just as fast as gains. Never tell anyone to trade real money. If asked about real money or mainnet, answer that Juggle runs on testnet with test funds only and real-money play is not available.
 - Use the context provided for any account, P&L, price, streak, SKR, or leverage questions. Never say "I don't know" — derive the answer from context or game logic.
 - Answer anything about: game mechanics, the player's current run, P&L, lanes, SKR shield, leverage, leaderboard strategy, Pacifica DEX, SOL price action, BONK, trading tips.
 - If the question has nothing to do with Juggle, crypto, trading, or the player's account, reply: "I only know Juggle. Ask me about the game, your P&L, lanes, or SKR."

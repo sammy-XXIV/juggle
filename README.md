@@ -41,6 +41,30 @@ Built for the [Clock In Solana Mobile Hackathon](https://solanamobile.radiant.ne
 
 Every shielded losing run in the app shows its own burn with a "view burn" Explorer link on the results screen.
 
+## Verify it yourself
+
+```bash
+npm install && (cd leaderboard && npm install)
+npm test        # 12 trade-engine tests (Vitest) + 16 leaderboard/SKR tests (node --test)
+node scripts/eval-coach.mjs 3   # AI coach eval against the live endpoint, writes docs/ai-eval.md
+```
+
+| What to check | Where | Test |
+|---|---|---|
+| Kotlin MWA plugin: authorize, sign message, sign and send transaction | `android/app/src/main/java/com/radiants/juggle/SolanaMwaPlugin.kt:66`, `:86`, `:97` | on device |
+| Agent key bound once by a wallet signature | `src/pacifica/account.ts:91`, `src/pacifica/api.ts:100` | on device |
+| Lane becomes a market order every 20 s, sized stake × leverage | `src/trade/TradeEngine.ts:124` (`tick`), `:190` (`targetAmount`), `:210` (`moveTo`) | `src/trade/TradeEngine.test.ts` "orders" |
+| Switching sides and ending a run close reduce-only; one order at a time | `src/trade/TradeEngine.ts:210`, `:137` (`end`) | "switching long to short…", "ending a run…", "a new round is ignored…" |
+| Loss stop at −stake | `src/trade/TradeEngine.ts:134` | "the run stops once P&L reaches -stake" |
+| Shield only after a confirmed burn | `src/trade/TradeEngine.ts:151` | "SKR shield" tests |
+| Leaderboard scores Pacifica fills, never app numbers | `leaderboard/src/index.ts:66` (`fetchFills`), `:142` (`submitRun`) | `leaderboard/test/worker.test.ts` "P&L comes from Pacifica fills…" |
+| Anti-spoof stake floor (position ÷ max leverage) | `leaderboard/src/index.ts:158` | "anti-spoof…" |
+| SKR burn verification: mint, signer, run window, failed or missing tx, RPC errors | `leaderboard/src/index.ts:83` (`verifySkrBurn`) | "rejects a burn…" tests |
+| Duplicate burn rejected, re-submitting the same run allowed | `leaderboard/src/index.ts:167` | "rejects reusing one burn…" |
+| Coverage from the amount actually burned (no claimed amounts) | `leaderboard/src/index.ts:83`, `:142` | "coverage uses the amount actually burned…" |
+| SKR burn instruction the wallet signs | `src/skr.ts:36` | devnet proof above |
+| AI coach context, debrief, risk rules | `src/ui/ChatAI.ts:22`, `:41`, `leaderboard/src/index.ts:213` | [docs/AI.md](docs/AI.md), [docs/ai-eval.md](docs/ai-eval.md) |
+
 ## How a run works
 
 1. **Connect** with Mobile Wallet Adapter (Phantom, Solflare, Seeker wallet).
@@ -63,6 +87,8 @@ Model: `openai/gpt-4o-mini` via the Orbio gateway, called from the Cloudflare Wo
 **2. In-run coach chat.** Every question is sent with the live state: SOL price, current lane, open position, P&L, leverage, streak, SKR shield tier and coverage, and the last 5 graded rounds. The system prompt limits it to Juggle, trading and the player's account.
 
 The AI advises; it never places orders. Orders only come from the player's lane.
+
+**Guardrails and evaluation.** Risk rules in the system prompt override any request: no profit promises or price predictions, never push leverage (always say it magnifies losses), testnet only, no real-money advice. `scripts/eval-coach.mjs` runs 9 scenarios (debriefs, chasing losses at 20x, price prediction, prompt injection, real money, off-topic, SKR on a win) 3 times each against the live endpoint: currently **27/27 pass**. Full prompts, responses and checks: [docs/ai-eval.md](docs/ai-eval.md). Design, real in-app debriefs, and the failures that shaped each rule: [docs/AI.md](docs/AI.md).
 
 ## SKR shield: rules, custody, failure cases
 
@@ -133,7 +159,7 @@ Leaderboard Worker:
 
 ```bash
 cd leaderboard && npm install
-echo "ORBIO_API_KEY=..." > .dev.vars
+printf 'ORBIO_API_KEY=...\nSOLANA_RPC_URL=https://solana-devnet.g.alchemy.com/v2/<key>\n' > .dev.vars
 npx wrangler d1 execute juggle-leaderboard --local --file=schema.sql
 npx wrangler dev
 ```
@@ -155,7 +181,8 @@ Release signing reads `android/keystore.properties` (not committed). Output: `an
 | Setting | Where | Value |
 |---|---|---|
 | Pacifica API / WS | `src/config.ts` | `test-api.pacifica.fi`, `test-ws.pacifica.fi` |
-| Solana RPC | `src/config.ts`, `leaderboard/wrangler.toml` | devnet |
+| Solana RPC (app) | `src/config.ts` | public devnet |
+| `SOLANA_RPC_URL` (Worker) | Worker secret | a keyed devnet RPC (Alchemy). The public devnet RPC blocks Cloudflare Worker IPs, so burn verification needs its own endpoint. |
 | SKR mint | `src/config.ts`, `leaderboard/wrangler.toml` | devnet mock |
 | Leaderboard URL | `src/config.ts` | deployed Worker |
 | `ORBIO_API_KEY` | Worker secret / `leaderboard/.dev.vars` | not committed |

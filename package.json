@@ -7,13 +7,15 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "test": "vitest run && node --test \"leaderboard/test/*.test.ts\""
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.62.2",
     "@types/three": "^0.186.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
+    "vitest": "^5.0.3",
     "wrangler": "^4.144.0"
   },
   "dependencies": {
