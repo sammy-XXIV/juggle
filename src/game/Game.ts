@@ -45,6 +45,7 @@ export class Game {
 
   start(): void {
     this.feed.start((point) => {
+      this.hud.setPrice(point.price, this.price);
       this.recentPrices.push(point);
       if (this.recentPrices.length > PRICE_WINDOW) this.recentPrices.shift();
     });

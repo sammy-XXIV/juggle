@@ -15,6 +15,18 @@ export class Hud {
   private position = $("hud-position");
   private timerRing = $("hud-timer-ring") as unknown as SVGCircleElement;
   private timerSecs = $("hud-timer-secs");
+  private hudSol = $("hud-sol");
+  private ticker = $("sol-ticker");
+  private tickerPrice = $("sol-ticker-price");
+
+  setPrice(price: number, prev: number): void {
+    const text = `SOL $${price.toFixed(2)}`;
+    const tone = prev === 0 || price === prev ? "flat" : price > prev ? "up" : "down";
+    this.hudSol.textContent = text;
+    this.tickerPrice.textContent = text;
+    this.hudSol.dataset.tone = tone;
+    this.ticker.dataset.tone = tone;
+  }
 
   private setTimer(fraction: number, secs: number): void {
     const offset = CIRCUMFERENCE * (1 - fraction);

@@ -402,6 +402,38 @@ body,
   margin: 0;
 }
 
+.sol-ticker {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 12px);
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+.sol-ticker i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  background: #bbb;
+  transition: background 0.3s;
+}
+
+.sol-ticker[data-tone="up"] i { background: var(--sol-green); }
+.sol-ticker[data-tone="down"] i { background: #ff5a5a; }
+#hud-sol[data-tone="up"] { color: var(--sol-green); }
+#hud-sol[data-tone="down"] { color: #ff5a5a; }
+
 .wallet-chip {
   position: absolute;
   top: calc(env(safe-area-inset-top) + 12px);

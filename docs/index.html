@@ -118,6 +118,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);font-fami
 .candle{position:absolute;top:0;width:80px;animation:fall 3.2s ease-in infinite}
 @keyframes fall{0%{transform:translateY(-300px);opacity:0}15%{opacity:1}100%{transform:translateY(1300px);opacity:1}}
 
+/* live ticker */
+.ticker{position:absolute;display:flex;align-items:center;gap:14px;font-family:"Bebas Neue";font-size:40px;letter-spacing:2px;padding:12px 26px 8px;background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:999px;box-shadow:0 6px 0 var(--ink)}
+.ticker i{width:18px;height:18px;border-radius:50%;border:3px solid var(--ink);background:#bbb;transition:background .3s;margin-top:-4px}
+.ticker[data-tone="up"] i{background:var(--green)}
+.ticker[data-tone="down"] i{background:var(--red)}
+.ticker small{font-family:"Space Grotesk";font-weight:700;font-size:20px;letter-spacing:0;color:#55555f;margin-top:-4px}
+.ticker .px{min-width:170px}
+
 /* chrome */
 #progress{position:fixed;left:0;top:0;height:6px;background:linear-gradient(90deg,var(--purple),var(--green));transition:width .4s cubic-bezier(.22,1,.36,1);z-index:5}
 #controls{position:fixed;right:24px;bottom:20px;display:flex;align-items:center;gap:12px;z-index:5}
@@ -142,6 +150,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);font-fami
   <div class="cloud" style="top:300px;animation-duration:52s;animation-delay:-30s;transform:scale(.7)"></div>
   <div class="cloud" style="top:190px;animation-duration:44s;animation-delay:-20s"></div>
   <div class="track-wrap"><div class="track"><div></div><div></div><div></div></div></div>
+  <div class="ticker a" style="--i:5;left:128px;top:56px" data-tone="flat"><i></i><span class="px">SOL —</span><small>Pacifica testnet · live</small></div>
   <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:10px">
     <span class="kicker a" style="--i:0;align-self:center">Solana Mobile · Clock In Hackathon</span>
     <h1 class="logo bob" style="margin-top:34px">JUGGLE</h1>
@@ -192,6 +201,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);font-fami
 
 <!-- 4 HOW IT WORKS -->
 <section class="slide night center" aria-label="How it works">
+  <div class="ticker a" style="--i:3;right:128px;top:100px" data-tone="flat"><i></i><span class="px">SOL —</span><small>Pacifica testnet · live</small></div>
   <span class="kicker a" style="--i:0">How it Works</span>
   <h2 class="title a" style="--i:1">Your lane <span class="g">is</span> your position</h2>
   <div class="lanes a up" style="--i:2;position:relative">
@@ -352,6 +362,36 @@ addEventListener("touchend", (e) => {
   const dx = e.changedTouches[0].clientX - sx;
   if (Math.abs(dx) > 50) go(cur + (dx < 0 ? 1 : -1));
 }, { passive: true });
+
+let last = 0, delay = 1000;
+function feed() {
+  const ws = new WebSocket("wss://test-ws.pacifica.fi/ws");
+  let ping;
+  ws.onopen = () => {
+    delay = 1000;
+    ws.send(JSON.stringify({ method: "subscribe", params: { source: "prices" } }));
+    ping = setInterval(() => ws.send(JSON.stringify({ method: "ping" })), 30000);
+  };
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.channel !== "prices") return;
+    const sol = msg.data.find((p) => p.symbol === "SOL");
+    if (!sol) return;
+    const price = Number(sol.mark);
+    const tone = !last || price === last ? "flat" : price > last ? "up" : "down";
+    last = price;
+    document.querySelectorAll(".ticker").forEach((t) => {
+      t.dataset.tone = tone;
+      t.querySelector(".px").textContent = `SOL $${price.toFixed(2)}`;
+    });
+  };
+  ws.onclose = () => {
+    clearInterval(ping);
+    setTimeout(feed, delay);
+    delay = Math.min(delay * 2, 15000);
+  };
+}
+feed();
 
 addEventListener("resize", fit);
 fit();
