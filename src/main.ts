@@ -295,7 +295,7 @@ $("btn-crank").addEventListener("click", () => { engine?.cycleCrank(); Haptics.t
 $("btn-cashout").addEventListener("click", () => { game.cashOut(); Haptics.cashOut(); Sounds.cashOut(); });
 
 const REASON_TITLE: Record<RunEndReason, string> = {
-  hit: "LIQUIDATED",
+  hit: "POSITION CLOSED",
   "stake-lost": "STAKE GONE",
   "cash-out": "CASHED OUT",
 };
