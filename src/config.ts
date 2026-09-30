@@ -17,6 +17,6 @@ export const APP_NAME = "Juggle";
 export const LEADERBOARD_URL = "https://juggle-leaderboard.samsonsamuel531.workers.dev";
 
 // Devnet mock SKR token — fill in after running node scripts/create-skr-token.mjs
-export const SKR_MINT = "FILL_AFTER_SETUP";
-export const SKR_MINT_AUTHORITY = "FILL_AFTER_SETUP";
+export const SKR_MINT = "3zcV6Y9yxbYMgbyc2GSnfaFkMSx8tKX7pjvBfTf2w7qr";
+export const SKR_MINT_AUTHORITY = "4XZvdD59HqRdKUvb5QFq5r6ynA8G7e2LtA4Kjtz2ypEBmYqFG1GfUJ2LAcr1hLqa5uadkfW1XGFvoC1QeLRZjCKy";
 export const SKR_DECIMALS = 6;
