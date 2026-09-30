@@ -147,7 +147,9 @@ async function refreshFunding(): Promise<boolean> {
   const acct = account!;
   $("fund-address").textContent = `Wallet: ${acct.address}`;
   $("fund-status").textContent = "Checking balances…";
-  const [sol, usdc, info] = await Promise.all([acct.walletSol(), acct.walletUsdc(), acct.info()]);
+  const [sol, usdc, info, skr] = await Promise.all([
+    acct.walletSol(), acct.walletUsdc(), acct.info(), acct.walletSkr(),
+  ]);
   const balance = info ? Number(info.available_to_spend) : 0;
   const agentOn = acct.isAgentBound();
 
@@ -155,16 +157,20 @@ async function refreshFunding(): Promise<boolean> {
   $("fund-usdc").textContent = `$${usdc.toFixed(2)}`;
   $("fund-balance").textContent = `$${balance.toFixed(2)}`;
   $("fund-agent").textContent = agentOn ? "ON" : "OFF";
+  $("fund-skr").textContent = `${skr.toFixed(0)} SKR`;
 
   const hasSol = sol >= 0.005;
+  const hasSkr = skr >= 50;
   $("step-sol").classList.toggle("is-done", hasSol);
   $("step-usdc").classList.toggle("is-done", usdc >= MIN_DEPOSIT_USDC || balance >= MIN_STAKE);
   $("step-deposit").classList.toggle("is-done", balance >= MIN_STAKE);
   $("step-agent").classList.toggle("is-done", agentOn);
+  $("step-skr").classList.toggle("is-done", hasSkr);
 
   $<HTMLButtonElement>("btn-mint").disabled = !hasSol;
   $<HTMLButtonElement>("btn-deposit").disabled = !hasSol || usdc < MIN_DEPOSIT_USDC;
   $<HTMLButtonElement>("btn-agent").disabled = !info || agentOn;
+  $<HTMLButtonElement>("btn-mint-skr").disabled = hasSkr;
   const ready = balance >= MIN_STAKE && agentOn;
   $<HTMLButtonElement>("btn-fund-continue").disabled = !ready;
   $("fund-status").textContent = ready
@@ -206,6 +212,12 @@ action("btn-deposit", async () => {
 action("btn-agent", async () => {
   $("fund-status").textContent = "Sign once in your wallet to enable popup-free trading…";
   await account!.bindAgent();
+  await refreshFunding();
+});
+
+action("btn-mint-skr", async () => {
+  $("fund-status").textContent = "Minting test SKR…";
+  await account!.mintTestSkr();
   await refreshFunding();
 });
 

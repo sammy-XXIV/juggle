@@ -5,6 +5,7 @@ import { PacificaClient, PacificaError, type AccountInfo, type AgentKey } from "
 import { depositInstruction, mintTestUsdcInstruction, usdcTokenAccount } from "./funding";
 import { connection, type Wallet } from "../wallet/wallet";
 import { PACIFICA_API_URL } from "../config";
+import { burnSkrInstruction, getSkrBalance, mintTestSkr } from "../skr";
 
 export const pacifica = new PacificaClient(PACIFICA_API_URL);
 
@@ -65,6 +66,20 @@ export class TradingAccount {
   deposit(amount: number): Promise<string> {
     return this.wallet.sendTransaction(
       new Transaction().add(depositInstruction(this.wallet.publicKey, amount)),
+    );
+  }
+
+  walletSkr(): Promise<number> {
+    return getSkrBalance(this.wallet.publicKey);
+  }
+
+  mintTestSkr(amount = 1000): Promise<string> {
+    return mintTestSkr(this.wallet.publicKey, amount);
+  }
+
+  burnSkr(amount: number): Promise<string> {
+    return this.wallet.sendTransaction(
+      new Transaction().add(burnSkrInstruction(this.wallet.publicKey, amount)),
     );
   }
 

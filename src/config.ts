@@ -15,3 +15,8 @@ export const APP_NAME = "Juggle";
 
 // Local `wrangler dev` for now; switch to the deployed Worker URL before building the APK.
 export const LEADERBOARD_URL = "https://juggle-leaderboard.samsonsamuel531.workers.dev";
+
+// Devnet mock SKR token — fill in after running node scripts/create-skr-token.mjs
+export const SKR_MINT = "FILL_AFTER_SETUP";
+export const SKR_MINT_AUTHORITY = "FILL_AFTER_SETUP";
+export const SKR_DECIMALS = 6;

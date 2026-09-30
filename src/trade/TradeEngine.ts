@@ -136,9 +136,12 @@ export class TradeEngine {
       const coverage = this.skrCoveragePct / 100;
       shieldAbsorbed = Math.min(Math.abs(this.pnl) * coverage, Math.abs(this.pnl));
       skrBurned = this.skrStaked;
-      this.pnl += shieldAbsorbed; // reduce the loss
-      // mock burn — on mainnet this would be an SPL transfer to the burn address
-      console.log(`[SKR Shield] Burned ${skrBurned} SKR, absorbed $${shieldAbsorbed.toFixed(2)} loss`);
+      this.pnl += shieldAbsorbed;
+      try {
+        await this.account.burnSkr(skrBurned);
+      } catch (e) {
+        console.warn("[SKR Shield] Burn tx failed:", e);
+      }
     }
 
     return {
