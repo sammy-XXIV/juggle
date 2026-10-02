@@ -128,6 +128,22 @@ Coverage = min(SKR / 250, 1) × 50%. It only applies to a run that ends at a los
 - **Visible state.** HUD shows open position, leverage, P&L, round timer and any order error, every frame.
 - **Leaderboard anti-farming.** Returns are computed from real fills and normalised as if max leverage were 5x (`MAX_LEVERAGE`), so tiny stakes with huge positions can't top the board.
 
+## Security audit responses
+
+The hackathon's automated audit ran on commit `def8c91` (17 findings: 0 critical, 1 high, 8 medium, 7 low, 1 info). Each finding and what was done about it:
+
+| Finding | Status | What changed |
+|---|---|---|
+| `undici` 7.29.0 advisories (high), via `wrangler`/`miniflare` dev tooling | Fixed | Leaderboard `wrangler` updated; `undici` now 7.29.1. `npm audit`: 0 vulnerabilities in both packages. |
+| `uuid` 7.0.3 / 8.3.2 buffer bounds check (`xcode` via Capacitor CLI, `jayson` via `@solana/web3.js`) | Fixed | npm `overrides` pin these to `uuid@^11.1.1`. web3.js RPC verified working afterwards. |
+| `stream-json` 1.9.1 nested-input DoS (`jayson` server utils) | Fixed | Override to `stream-json@^3.7.0`. The app only loads `jayson`'s browser client, which doesn't use it. |
+| `kotlin-gradle-plugin` 2.2.21 build-cache deserialization (GHSA-r937-wjx7-w2jp) | Fixed | Upgraded to 2.4.20; release APK builds and runs. |
+| Key material passed to a logger (`scripts/create-skr-token.mjs`) | Fixed | The one-time setup script no longer prints the mint authority secret. It is a devnet-only mock SKR authority (see Environment notes). |
+| Capacitor bridge signs transactions/messages from the web layer (info, low confidence) | By design | That is the job of a wallet adapter bridge. Every request opens the player's wallet (Phantom etc.) with a full approval screen; nothing is signed without the player confirming. The demo video shows each prompt. |
+| Program security "needs review" items (unclassified, 10) | Open | Marked by the audit as needing human review, not confirmed. Juggle has no on-chain program of its own; it calls the SPL Token program and Pacifica's program. |
+
+Scan limitation noted by the audit: "non-shipping-source". Juggle ships a web bundle inside a Capacitor APK, so some program-level checks don't apply.
+
 ## Architecture
 
 ```

@@ -90,5 +90,5 @@ if (mintInfo) {
 
 console.log("\n=== Add to src/config.ts ===");
 console.log(`export const SKR_MINT = "${mint.publicKey.toBase58()}";`);
-console.log(`export const SKR_MINT_AUTHORITY = "${bs58.encode(mintAuthority.secretKey)}";`);
+console.log(`export const SKR_MINT_AUTHORITY = <mintAuthoritySecret from ${KEYPAIRS_FILE}>;`);
 console.log(`export const SKR_DECIMALS = ${DECIMALS};`);
