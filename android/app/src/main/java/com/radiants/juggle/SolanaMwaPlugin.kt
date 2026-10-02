@@ -93,12 +93,13 @@ class SolanaMwaPlugin : Plugin() {
         })
     }
 
+    // Wallet signs only; the app submits to its own RPC, so the wallet's network setting can't get in the way.
     @PluginMethod
-    fun signAndSendTransaction(call: PluginCall) {
+    fun signTransaction(call: PluginCall) {
         val mwa = requireAdapter(call) ?: return
         val tx = unb64(call.getString("transaction") ?: return call.reject("transaction required"))
-        session(call, mwa, { signAndSendTransactions(arrayOf(tx)) }, { result, _ ->
-            JSObject().apply { put("signature", b64(result.signatures.first())) }
+        session(call, mwa, { signTransactions(arrayOf(tx)) }, { result, _ ->
+            JSObject().apply { put("transaction", b64(result.signedPayloads.first())) }
         })
     }
 

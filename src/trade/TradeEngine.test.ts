@@ -143,6 +143,15 @@ test("a new round is ignored while the previous order is still in flight (one or
   expect(orders()).toHaveLength(1);
 });
 
+test("cashing out mid-round still logs that last partial round, so the debrief sees the position", async () => {
+  const e = await started();
+  e.tick(20_000, 2, 100); // order fires: long
+  await vi.waitFor(() => expect(e.position).toBe(1));
+  e.tick(30_000, 2, 99); // mid-round, SOL -1%
+  const run = await e.end(30_000);
+  expect(run.rounds.at(-1)).toEqual({ dir: 1, leverage: 20, movePct: -1 });
+});
+
 test("every round is logged with direction, leverage and SOL move for the AI debrief", async () => {
   const e = await started();
   e.tick(20_000, 2, 100); // round 1: no position yet

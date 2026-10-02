@@ -136,6 +136,8 @@ export class TradeEngine {
 
   async end(now: number): Promise<RunResult> {
     this.ended = true;
+    // Cash-outs and crashes usually land mid-round; log it so the AI debrief sees the position that decided the run.
+    if (now - this.roundStartedAt > 1_000) this.scoreRound();
     window.clearInterval(this.equityTimer);
     while (this.busy) await new Promise((r) => setTimeout(r, 100));
     await this.moveTo(0, true);

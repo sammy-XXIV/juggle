@@ -41,6 +41,10 @@
 
       <section id="landing">
         <button id="btn-wallet" class="wallet-chip" type="button">CONNECT WALLET</button>
+        <div id="balance-chip" class="balance-chip" hidden>
+          <span>USDC <b id="bal-usdc">—</b></span>
+          <span>SKR <b id="bal-skr">—</b></span>
+        </div>
         <span id="sol-ticker" class="sol-ticker" data-tone="flat" aria-live="off"><i></i><span id="sol-ticker-price">SOL —</span></span>
         <div class="landing-top">
           <h1 class="logo">JUGGLE</h1>
@@ -115,6 +119,7 @@
 
       <section id="stake" class="screen" hidden>
         <h2 class="screen-title">HOW MUCH?</h2>
+        <p id="stake-balance" class="stake-note">Balance: —</p>
         <p id="stake-amount" class="stake-amount">$10</p>
         <div class="chips">
           <button class="chip is-active" type="button" data-amount="10">$10</button>

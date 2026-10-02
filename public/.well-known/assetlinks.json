@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.radiants.juggle",
+      "sha256_cert_fingerprints": [
+        "75:C3:7F:12:75:1D:B3:51:05:E9:59:C3:71:D1:9B:9D:20:9D:12:70:36:84:28:3C:6F:85:48:32:41:8E:E1:BF"
+      ]
+    }
+  }
+]

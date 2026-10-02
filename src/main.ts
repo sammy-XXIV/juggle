@@ -35,6 +35,22 @@ let lastMode: "real" | "practice" = "real";
 function show(screen: Screen | null): void {
   for (const id of SCREENS) $(id).hidden = id !== screen;
   $("hud").hidden = screen !== null;
+  if (screen === "landing" || screen === "stake") void refreshBalances();
+}
+
+/** Trading USDC (Pacifica, available to spend) and wallet SKR, on the home chip and the stake screen. */
+async function refreshBalances(): Promise<void> {
+  const chip = $("balance-chip");
+  chip.hidden = !account;
+  if (!account) return;
+  const acct = account;
+  const [info, skr] = await Promise.all([acct.info().catch(() => null), acct.walletSkr()]);
+  if (acct !== account) return;
+  const usdc = info ? `$${Number(info.available_to_spend).toFixed(2)}` : "—";
+  const skrText = skr.toFixed(0);
+  $("bal-usdc").textContent = usdc;
+  $("bal-skr").textContent = skrText;
+  $("stake-balance").textContent = `Balance: ${usdc} USDC · ${skrText} SKR`;
 }
 
 let toastTimer: number | undefined;
@@ -72,6 +88,7 @@ function shortAddress(address: string): string {
 
 function renderWalletChip(): void {
   $("btn-wallet").textContent = !wallet ? "CONNECT WALLET" : playerName ?? shortAddress(wallet.publicKey.toBase58());
+  void refreshBalances();
 }
 
 async function connect(): Promise<void> {
@@ -147,9 +164,12 @@ async function refreshFunding(): Promise<boolean> {
   const acct = account!;
   $("fund-address").textContent = `Wallet: ${acct.address}`;
   $("fund-status").textContent = "Checking balances…";
-  const [sol, usdc, info, skr] = await Promise.all([
-    acct.walletSol(), acct.walletUsdc(), acct.info(), acct.walletSkr(),
-  ]);
+  const load = () => Promise.all([acct.walletSol(), acct.walletUsdc(), acct.info(), acct.walletSkr()]);
+  // Returning from the wallet app, the first request sometimes drops ("Failed to fetch"); one quiet retry covers it.
+  const [sol, usdc, info, skr] = await load().catch(async () => {
+    await new Promise((r) => setTimeout(r, 1200));
+    return load();
+  });
   const balance = info ? Number(info.available_to_spend) : 0;
   const agentOn = acct.isAgentBound();
 
@@ -355,7 +375,8 @@ async function finishRun(reason: RunEndReason): Promise<void> {
     shieldEl.append(`SKR Shield absorbed $${run.shieldAbsorbed.toFixed(2)} · ${run.skrBurned} SKR burned · `, link);
     shieldEl.hidden = false;
   } else if (run.skrBurnError) {
-    shieldEl.textContent = "SKR burn not confirmed, so no shield was applied";
+    const reason = /reject|declin|cancel/i.test(run.skrBurnError) ? "you declined it in your wallet" : run.skrBurnError.slice(0, 90);
+    shieldEl.textContent = `SKR burn not confirmed (${reason}), so no shield was applied`;
     shieldEl.hidden = false;
   }
 

@@ -71,8 +71,9 @@ export class PacificaClient {
     data: Record<string, unknown>,
     signer: Signer,
     agentWallet: string | null,
+    expiryWindow?: number,
   ): Promise<T> {
-    const header = await signOperation(type, data, signer);
+    const header = await signOperation(type, data, signer, expiryWindow);
     return this.request<T>(path, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -105,6 +106,8 @@ export class PacificaClient {
       { agent_wallet: agentPublicKey },
       walletSigner,
       null,
+      // A person approves this in their wallet app; 5 s expires before Pacifica sees it.
+      120_000,
     );
   }
 

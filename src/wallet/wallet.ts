@@ -24,7 +24,7 @@ interface SolanaMwaPlugin {
     cluster: "devnet" | "mainnet";
   }): Promise<{ publicKey: string; label: string | null }>;
   signMessage(options: { message: string }): Promise<{ signature: string }>;
-  signAndSendTransaction(options: { transaction: string }): Promise<{ signature: string }>;
+  signTransaction(options: { transaction: string }): Promise<{ transaction: string }>;
   deauthorize(): Promise<void>;
 }
 
@@ -43,6 +43,38 @@ async function confirm(signature: string, latest: { blockhash: string; lastValid
   return signature;
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Right after the wallet app hands control back, the WebView's first requests can drop and its WebSocket may be
+ * dead. Re-sending the same signed bytes is safe (same signature), so: resend until seen, confirm by polling.
+ */
+export async function sendSignedWithRetry(raw: Uint8Array): Promise<string> {
+  const signature = bs58.encode(Transaction.from(raw).signature!);
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < 30; attempt++) {
+    try {
+      if (attempt % 3 === 0) await connection.sendRawTransaction(raw, { skipPreflight: attempt > 0, maxRetries: 0 });
+    } catch (e) {
+      lastError = e;
+      const msg = e instanceof Error ? e.message : String(e);
+      // A real on-chain rejection (not a network blip) won't fix itself.
+      if (/simulation failed|custom program error|insufficient/i.test(msg) && attempt === 0) throw e;
+    }
+    try {
+      const { value } = await connection.getSignatureStatuses([signature]);
+      const status = value[0];
+      if (status?.err) throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
+      if (status && (status.confirmationStatus === "confirmed" || status.confirmationStatus === "finalized")) return signature;
+    } catch (e) {
+      if (e instanceof Error && e.message.startsWith("Transaction failed")) throw e;
+      lastError = e;
+    }
+    await sleep(attempt < 3 ? 600 : 1500);
+  }
+  throw new Error(`Not confirmed: ${lastError instanceof Error ? lastError.message : "timed out"}`);
+}
+
 /** Real wallet on the phone via Solana Mobile Wallet Adapter (Seed Vault, Phantom, Solflare...). */
 class MobileWallet implements Wallet {
   readonly publicKey: PublicKey;
@@ -58,11 +90,12 @@ class MobileWallet implements Wallet {
     return Uint8Array.from(Buffer.from(signature, "base64"));
   }
 
+  // The wallet only signs; Juggle submits to devnet itself. Phantom hangs on sign-and-send for devnet over MWA.
   async sendTransaction(tx: Transaction): Promise<string> {
-    const latest = await prepare(tx, this.publicKey);
+    await prepare(tx, this.publicKey);
     const unsigned = tx.serialize({ requireAllSignatures: false, verifySignatures: false });
-    const { signature } = await SolanaMwa.signAndSendTransaction({ transaction: unsigned.toString("base64") });
-    return confirm(bs58.encode(Buffer.from(signature, "base64")), latest);
+    const { transaction } = await SolanaMwa.signTransaction({ transaction: unsigned.toString("base64") });
+    return sendSignedWithRetry(Buffer.from(transaction, "base64"));
   }
 
   disconnect(): Promise<void> {

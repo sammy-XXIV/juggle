@@ -457,6 +457,30 @@ body,
 #hud-sol[data-tone="up"] { color: var(--sol-green); }
 #hud-sol[data-tone="down"] { color: #ff5a5a; }
 
+.balance-chip {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 52px);
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 15px;
+  letter-spacing: 1px;
+  line-height: 1.2;
+  padding: 5px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+.balance-chip b {
+  font-weight: 400;
+  color: var(--sol-purple);
+}
+
 .wallet-chip {
   position: absolute;
   top: calc(env(safe-area-inset-top) + 12px);
