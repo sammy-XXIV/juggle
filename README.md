@@ -45,16 +45,22 @@ Every shielded losing run in the app shows its own burn with a "view burn" Explo
 
 ```bash
 npm install && (cd leaderboard && npm install)
-npm test        # 12 trade-engine tests (Vitest) + 16 leaderboard/SKR tests (node --test)
+npm test        # 47 Vitest tests (trade engine + wallet signing guard) + 16 leaderboard/SKR tests (node --test)
+(cd android && ./gradlew testDebugUnitTest)   # 29 Kotlin tests for the native signing guard
 node scripts/eval-coach.mjs 3   # AI coach eval against the live endpoint, writes docs/ai-eval.md
+node scripts/verify-run.mjs <account> <startMs> <endMs> <burnSig>   # re-derive a leaderboard score from public data
 ```
+
+One real run traced end to end (fills, burn decode, arithmetic, rejected shield attempts): [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
 | What to check | Where | Test |
 |---|---|---|
-| Kotlin MWA plugin: authorize, sign message, sign and send transaction | `android/app/src/main/java/com/radiants/juggle/SolanaMwaPlugin.kt:66`, `:86`, `:97` | on device |
-| Agent key bound once by a wallet signature | `src/pacifica/account.ts:91`, `src/pacifica/api.ts:100` | on device |
-| Lane becomes a market order every 20 s, sized stake × leverage | `src/trade/TradeEngine.ts:124` (`tick`), `:190` (`targetAmount`), `:210` (`moveTo`) | `src/trade/TradeEngine.test.ts` "orders" |
-| Switching sides and ending a run close reduce-only; one order at a time | `src/trade/TradeEngine.ts:210`, `:137` (`end`) | "switching long to short…", "ending a run…", "a new round is ignored…" |
+| Kotlin MWA plugin: authorize, sign message, sign transaction | `android/app/src/main/java/com/radiants/juggle/SolanaMwaPlugin.kt:67`, `:88`, `:102` | on device (demo video) |
+| Signing boundary, native: only burn-SKR / mint / deposit transactions and two message formats reach the wallet | `android/.../SigningGuard.kt:76` (`checkTransaction`), `:124` (`checkMessage`) | `SigningGuardTest.kt` (29, using transactions serialized by the app itself) |
+| Signing boundary, web layer (same allowlist) | `src/wallet/guard.ts:24`, `:59` | `src/wallet/guard.test.ts` (34) |
+| Agent key bound once by a wallet signature | `src/pacifica/account.ts:91`, `src/pacifica/api.ts:101` | on device |
+| Lane becomes a market order every 20 s, sized stake × leverage | `src/trade/TradeEngine.ts:124` (`tick`), `:192` (`targetAmount`), `:212` (`moveTo`) | `src/trade/TradeEngine.test.ts` "orders" |
+| Switching sides and ending a run close reduce-only; one order at a time | `src/trade/TradeEngine.ts:212`, `:137` (`end`) | "switching long to short…", "ending a run…", "a new round is ignored…" |
 | Loss stop at −stake | `src/trade/TradeEngine.ts:134` | "the run stops once P&L reaches -stake" |
 | Shield only after a confirmed burn | `src/trade/TradeEngine.ts:151` | "SKR shield" tests |
 | Leaderboard scores Pacifica fills, never app numbers | `leaderboard/src/index.ts:66` (`fetchFills`), `:142` (`submitRun`) | `leaderboard/test/worker.test.ts` "P&L comes from Pacifica fills…" |
@@ -139,7 +145,7 @@ The hackathon's automated audit ran on commit `def8c91` (17 findings: 0 critical
 | `stream-json` 1.9.1 nested-input DoS (`jayson` server utils) | Fixed | Override to `stream-json@^3.7.0`. The app only loads `jayson`'s browser client, which doesn't use it. |
 | `kotlin-gradle-plugin` 2.2.21 build-cache deserialization (GHSA-r937-wjx7-w2jp) | Fixed | Upgraded to 2.4.20; release APK builds and runs. |
 | Key material passed to a logger (`scripts/create-skr-token.mjs`) | Fixed | The one-time setup script no longer prints the mint authority secret. It is a devnet-only mock SKR authority (see Environment notes). |
-| Capacitor bridge signs transactions/messages from the web layer (info, low confidence) | By design | That is the job of a wallet adapter bridge. Every request opens the player's wallet (Phantom etc.) with a full approval screen; nothing is signed without the player confirming. The demo video shows each prompt. |
+| Capacitor bridge signs transactions/messages from the web layer (info, low confidence) | Hardened | The bridge now refuses everything outside a strict allowlist before a wallet session opens (`SigningGuard.kt`, mirrored in `src/wallet/guard.ts`). Transactions: legacy format only, the connected wallet as sole signer and fee payer, at most 3 instructions, and only (a) Pacifica test-USDC mint / deposit with a capped amount, or (b) an SPL Token **Burn** of the SKR mint, by the wallet, up to the largest shield tier (250 SKR). Token transfers, approvals, account closes, SOL transfers and unknown programs are refused. Messages: only the leaderboard-name format for this wallet and an agent-key bind with a short, fresh expiry. 63 tests cover accepted and refused cases (34 TypeScript, 29 Kotlin). The player still approves every request in their wallet. |
 | Program security "needs review" items (unclassified, 10) | Open | Marked by the audit as needing human review, not confirmed. Juggle has no on-chain program of its own; it calls the SPL Token program and Pacifica's program. |
 
 Scan limitation noted by the audit: "non-shipping-source". Juggle ships a web bundle inside a Capacitor APK, so some program-level checks don't apply.

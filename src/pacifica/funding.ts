@@ -9,8 +9,8 @@ const TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ
 const ATA_PROGRAM_ID = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 
 // Anchor discriminators from the testnet program's IDL.
-const MINT_TEST_USDC = [118, 144, 78, 118, 155, 214, 185, 186];
-const DEPOSIT = [242, 35, 198, 137, 82, 225, 242, 182];
+export const MINT_TEST_USDC = [118, 144, 78, 118, 155, 214, 185, 186];
+export const DEPOSIT = [242, 35, 198, 137, 82, 225, 242, 182];
 
 const USDC_DECIMALS = 1_000_000;
 

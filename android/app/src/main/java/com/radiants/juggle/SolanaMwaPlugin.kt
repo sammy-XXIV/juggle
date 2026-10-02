@@ -26,6 +26,7 @@ class SolanaMwaPlugin : Plugin() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var sender: ActivityResultSender
     private var adapter: MobileWalletAdapter? = null
+    private var wallet: ByteArray? = null // the account the player authorized; only it may sign
 
     // Must run during Activity.onCreate: ActivityResultSender registers an activity-result launcher.
     override fun load() {
@@ -75,6 +76,7 @@ class SolanaMwaPlugin : Plugin() {
         mwa.blockchain = if (call.getString("cluster") == "mainnet") Solana.Mainnet else Solana.Devnet
         adapter = mwa
         session(call, mwa, { it }, { _, auth ->
+            wallet = auth.accounts.first().publicKey
             JSObject().apply {
                 put("publicKey", b64(auth.accounts.first().publicKey))
                 put("label", auth.accounts.first().accountLabel)
@@ -86,6 +88,8 @@ class SolanaMwaPlugin : Plugin() {
     fun signMessage(call: PluginCall) {
         val mwa = requireAdapter(call) ?: return
         val message = unb64(call.getString("message") ?: return call.reject("message required"))
+        try { SigningGuard.checkMessage(message, wallet ?: return call.reject("Wallet not connected")) }
+        catch (e: SigningGuard.Refused) { return call.reject(e.message, "REFUSED") }
         session(call, mwa, { auth ->
             signMessagesDetached(arrayOf(message), arrayOf(auth.accounts.first().publicKey))
         }, { result, _ ->
@@ -98,6 +102,8 @@ class SolanaMwaPlugin : Plugin() {
     fun signTransaction(call: PluginCall) {
         val mwa = requireAdapter(call) ?: return
         val tx = unb64(call.getString("transaction") ?: return call.reject("transaction required"))
+        try { SigningGuard.checkTransaction(tx, wallet ?: return call.reject("Wallet not connected")) }
+        catch (e: SigningGuard.Refused) { return call.reject(e.message, "REFUSED") }
         session(call, mwa, { signTransactions(arrayOf(tx)) }, { result, _ ->
             JSObject().apply { put("transaction", b64(result.signedPayloads.first())) }
         })
@@ -109,6 +115,7 @@ class SolanaMwaPlugin : Plugin() {
         scope.launch {
             mwa.disconnect(sender)
             adapter = null
+            wallet = null
             call.resolve()
         }
     }

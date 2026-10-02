@@ -4,6 +4,7 @@ import { Buffer } from "buffer";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { APP_IDENTITY_URI, APP_NAME, SOLANA_RPC_URL } from "../config";
+import { assertSafeMessage, assertSafeTransaction } from "./guard";
 
 export interface Wallet {
   readonly publicKey: PublicKey;
@@ -86,6 +87,7 @@ class MobileWallet implements Wallet {
   }
 
   async signMessage(message: Uint8Array): Promise<Uint8Array> {
+    assertSafeMessage(message, this.publicKey);
     const { signature } = await SolanaMwa.signMessage({ message: Buffer.from(message).toString("base64") });
     return Uint8Array.from(Buffer.from(signature, "base64"));
   }
@@ -93,6 +95,7 @@ class MobileWallet implements Wallet {
   // The wallet only signs; Juggle submits to devnet itself. Phantom hangs on sign-and-send for devnet over MWA.
   async sendTransaction(tx: Transaction): Promise<string> {
     await prepare(tx, this.publicKey);
+    assertSafeTransaction(tx, this.publicKey);
     const unsigned = tx.serialize({ requireAllSignatures: false, verifySignatures: false });
     const { transaction } = await SolanaMwa.signTransaction({ transaction: unsigned.toString("base64") });
     return sendSignedWithRetry(Buffer.from(transaction, "base64"));
@@ -124,11 +127,13 @@ class DevWallet implements Wallet {
   }
 
   async signMessage(message: Uint8Array): Promise<Uint8Array> {
+    assertSafeMessage(message, this.publicKey);
     return nacl.sign.detached(message, this.keypair.secretKey);
   }
 
   async sendTransaction(tx: Transaction): Promise<string> {
     const latest = await prepare(tx, this.publicKey);
+    assertSafeTransaction(tx, this.publicKey);
     tx.sign(this.keypair);
     const signature = await connection.sendRawTransaction(tx.serialize());
     return confirm(signature, latest);
